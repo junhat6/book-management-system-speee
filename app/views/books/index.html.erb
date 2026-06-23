@@ -1,0 +1,10 @@
+<% if @books.any? %>
+  <% @books.each do |book| %>
+    <p><%= book.title %></p>
+    <p><%= book.isbn %></p>
+    <p><%= book.published_year %></p>
+    <p><%= book.publisher %></p>
+  <% end %>
+<% else %>
+  <p>本は見つかりませんでした。</p>
+<% end %>
