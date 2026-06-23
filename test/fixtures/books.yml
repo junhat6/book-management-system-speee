@@ -2,12 +2,12 @@
 
 one:
   title: MyString
-  isbn: MyString
-  published_year: 1
-  publisher: MyString
+  isbn: 123456789012
+  published_year: 1000
+  publisher: company1
 
 two:
   title: MyString
-  isbn: MyString
-  published_year: 1
-  publisher: MyString
+  isbn: 123456789234
+  published_year: 2000
+  publisher: company2
