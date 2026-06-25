@@ -63,6 +63,9 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+
+  # Better Minitest output (colors, test names, progress) [https://github.com/minitest-reporters/minitest-reporters]
+  gem "minitest-reporters"
 end
 
 group :production do
