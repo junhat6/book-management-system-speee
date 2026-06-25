@@ -82,6 +82,5 @@ Rails.application.configure do
     Bullet.console = true
     Bullet.rails_logger = true
     Bullet.add_footer = true
-    Bullet.footer_position = "bottom_left"  # or 'bottom_right', 'top_left', 'top_right'
   end
 end
