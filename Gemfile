@@ -75,6 +75,9 @@ group :test do
 
   # Better Minitest output (colors, test names, progress) [https://github.com/minitest-reporters/minitest-reporters]
   gem "minitest-reporters"
+
+  # Test coverage measurement (built on Ruby's Coverage module) [https://github.com/simplecov-ruby/simplecov]
+  gem "simplecov", require: false
 end
 
 group :production do

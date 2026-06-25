@@ -22,3 +22,10 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+
+## カバレッジ（テスト網羅率）
+
+```bash
+rails t                      # テスト実行と同時に coverage/ が更新される
+open coverage/index.html     # ブラウザでレポートを表示
+```
