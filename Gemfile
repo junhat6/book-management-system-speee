@@ -52,11 +52,20 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # Generate fake data for seeds and tests [https://github.com/faker-ruby/faker]
+  gem "faker"
 end
 
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Annotate models with schema info as comments [https://github.com/drwl/annotaterb]
+  gem "annotaterb", require: false
+
+  # Detect N+1 queries and unused eager loading during development [https://github.com/flyerhzm/bullet]
+  gem "bullet"
 end
 
 group :test do
