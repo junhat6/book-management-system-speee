@@ -21,7 +21,46 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_difference("Book.count") do
       post books_url, params: { book: { title: "New Book", isbn: "111111111111", published_year: 2020, publisher: "New Publisher" } }
     end
-
     assert_redirected_to book_url(Book.last)
+  end
+
+  test "should not create book with invalid data" do
+    assert_no_difference("Book.count") do
+      post books_url, params: { book: { title: "" } }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "should get edit" do
+    book = books(:one)
+    get edit_book_url(book)
+    assert_response :success
+  end
+
+  test "should update book" do
+    book = books(:one)
+    patch book_url(book), params: { book: { title: "Updated Title", isbn: "222222222222", published_year: 2021, publisher: "Updated Publisher" } }
+    assert_redirected_to book_url(book)
+    book.reload
+    assert_equal "Updated Title", book.title
+    assert_equal "222222222222", book.isbn
+    assert_equal 2021, book.published_year
+    assert_equal "Updated Publisher", book.publisher
+  end
+
+  test "should not update book with invalid data" do
+    book = books(:one)
+    patch book_url(book), params: { book: { title: "" } }
+    assert_response :unprocessable_entity
+    book.reload
+    assert_not_equal "", book.title
+  end
+
+  test "should destroy book" do
+    book = books(:one)
+    assert_difference("Book.count", -1) do
+      delete book_url(book)
+    end
+    assert_redirected_to books_url
   end
 end

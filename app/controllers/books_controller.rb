@@ -17,7 +17,7 @@ class BooksController < ApplicationController
     if @book.save
       redirect_to @book, notice: "Book was successfully created."
     else
-      render :new
+      render :new, status: :unprocessable_entity
     end
   end
 
