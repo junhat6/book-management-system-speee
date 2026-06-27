@@ -1,12 +1,46 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">蔵書一覧</h1>
+  <span class="badge badge-neutral"><%= @books.size %> 冊</span>
+</div>
+
 <% if @books.any? %>
-  <% @books.each do |book| %>
-  <div class="book">
-    <%= link_to book.title, book_path(book) %>
-    <p><%= book.isbn %></p>
-    <p><%= book.published_year %></p>
-    <p><%= book.publisher %></p>
+  <div class="card bg-base-100 shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>タイトル</th>
+            <th>ISBN</th>
+            <th>出版年</th>
+            <th>出版社</th>
+            <th class="text-right">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @books.each do |book| %>
+            <tr class="hover">
+              <td class="font-medium">
+                <%= link_to book.title, book_path(book), class: "link link-hover" %>
+              </td>
+              <td><%= book.isbn %></td>
+              <td><%= book.published_year %></td>
+              <td><%= book.publisher %></td>
+              <td class="text-right">
+                <%= link_to "詳細", book_path(book), class: "btn btn-xs btn-outline" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   </div>
-  <% end %>
 <% else %>
-  <p>本は見つかりませんでした。</p>
+  <div class="hero bg-base-100 rounded-box py-16">
+    <div class="hero-content text-center">
+      <div>
+        <p class="text-base-content/60 mb-4">本はまだ登録されていません。</p>
+        <%= link_to "最初の本を登録する", new_book_path, class: "btn btn-primary" %>
+      </div>
+    </div>
+  </div>
 <% end %>

@@ -1,4 +1,22 @@
-<%= @book.title %>
-<%= @book.isbn %>
-<%= @book.published_year %>
-<%= @book.publisher %>
+<div class="max-w-2xl mx-auto">
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <h1 class="card-title text-2xl mb-4"><%= @book.title %></h1>
+
+      <dl class="grid grid-cols-3 gap-y-3 text-sm">
+        <dt class="text-base-content/60">ISBN</dt>
+        <dd class="col-span-2"><%= @book.isbn %></dd>
+
+        <dt class="text-base-content/60">出版年</dt>
+        <dd class="col-span-2"><%= @book.published_year %></dd>
+
+        <dt class="text-base-content/60">出版社</dt>
+        <dd class="col-span-2"><%= @book.publisher %></dd>
+      </dl>
+
+      <div class="card-actions justify-end mt-6">
+        <%= link_to "一覧へ戻る", books_path, class: "btn btn-ghost" %>
+      </div>
+    </div>
+  </div>
+</div>
