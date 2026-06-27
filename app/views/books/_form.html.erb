@@ -1,0 +1,39 @@
+<%= form_with(model: @book, local: true, class: "space-y-4") do |form| %>
+  <% if @book.errors.any? %>
+    <div role="alert" class="alert alert-error">
+      <div>
+        <h2 class="font-bold"><%= pluralize(@book.errors.count, "件") %>のエラーで保存できませんでした</h2>
+        <ul class="list-disc list-inside text-sm">
+          <% @book.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :title, "タイトル", class: "label" %>
+    <%= form.text_field :title, class: "input input-bordered w-full" %>
+  </div>
+
+  <div>
+    <%= form.label :isbn, "ISBN", class: "label" %>
+    <%= form.text_field :isbn, class: "input input-bordered w-full" %>
+  </div>
+
+  <div>
+    <%= form.label :published_year, "出版年", class: "label" %>
+    <%= form.number_field :published_year, class: "input input-bordered w-full" %>
+  </div>
+
+  <div>
+    <%= form.label :publisher, "出版社", class: "label" %>
+    <%= form.text_field :publisher, class: "input input-bordered w-full" %>
+  </div>
+
+  <div class="flex justify-end gap-2 pt-2">
+    <%= link_to "キャンセル", books_path, class: "btn btn-ghost" %>
+    <%= form.submit submit_label, class: "btn btn-primary" %>
+  </div>
+<% end %>

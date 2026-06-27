@@ -1,10 +1,11 @@
 class BooksController < ApplicationController
+  before_action :set_book, only: [ :show, :edit, :update, :destroy ]
+
   def index
     @books = Book.order(created_at: :desc)
   end
 
   def show
-    @book = Book.find(params[:id])
   end
 
   def new
@@ -20,7 +21,27 @@ class BooksController < ApplicationController
     end
   end
 
+  def edit
+  end
+
+  def update
+    if @book.update(book_params)
+      redirect_to @book, notice: "Book was successfully updated."
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @book.destroy
+    redirect_to books_path, notice: "Book was successfully destroyed.", status: :see_other
+  end
+
   private
+
+  def set_book
+    @book = Book.find(params[:id])
+  end
 
   def book_params
     params.require(:book).permit(:title, :isbn, :published_year, :publisher)
