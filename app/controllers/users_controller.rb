@@ -7,6 +7,7 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
 
     if @user.save
+      reset_session
       session[:user_id] = @user.id
       redirect_to root_path, notice: "会員登録が完了しました"
     else

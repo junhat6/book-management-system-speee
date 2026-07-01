@@ -3,9 +3,10 @@ class SessionsController < ApplicationController
   end
 
   def create
-    user = User.find_by(email: session_params[:email].to_s.downcase)
+    user = User.find_by(email: session_params[:email].to_s.strip.downcase)
 
     if user&.authenticate(session_params[:password])
+      reset_session
       session[:user_id] = user.id
       redirect_to root_path, notice: "ログインしました"
     else
