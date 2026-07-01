@@ -18,7 +18,7 @@ class Book < ApplicationRecord
   has_many :book_authors, dependent: :destroy
   has_many :authors, through: :book_authors
 
-  attr_accessor :new_author_name
+  attr_reader :new_author_name
 
   validates :title, presence: true
   validates :isbn, presence: true, uniqueness: true
