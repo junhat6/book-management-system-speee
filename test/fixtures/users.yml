@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# == Schema Information
+#
+# Table name: users
+#
+#  id              :integer          not null, primary key
+#  admin           :boolean          default(FALSE), not null
+#  email           :string           not null
+#  name            :string           not null
+#  password_digest :string           not null
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#
+# Indexes
+#
+#  index_users_on_email  (email) UNIQUE
+#
+one:
+  name: 管理者
+  email: admin@example.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  admin: true
+
+two:
+  name: 一般ユーザー
+  email: user@example.com
+  password_digest: <%= BCrypt::Password.create("password123") %>
+  admin: false

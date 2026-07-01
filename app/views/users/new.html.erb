@@ -1,0 +1,45 @@
+<% content_for :title, "ユーザー登録" %>
+
+<div class="mx-auto max-w-md">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl">ユーザー登録</h1>
+
+      <%= form_with model: @user, url: users_path, local: true, class: "space-y-4" do |form| %>
+        <% if @user.errors.any? %>
+          <div role="alert" class="alert alert-error">
+            <span><%= @user.errors.full_messages.to_sentence %></span>
+          </div>
+        <% end %>
+
+        <div class="form-control">
+          <%= form.label :name, "名前", class: "label" %>
+          <%= form.text_field :name, class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :email, "メールアドレス", class: "label" %>
+          <%= form.email_field :email, class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :password, "パスワード", class: "label" %>
+          <%= form.password_field :password, class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :password_confirmation, "パスワード（確認）", class: "label" %>
+          <%= form.password_field :password_confirmation, class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="card-actions justify-end">
+          <%= form.submit "登録する", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+
+      <div class="text-sm">
+        <%= link_to "ログインはこちら", login_path, class: "link link-primary" %>
+      </div>
+    </div>
+  </div>
+</div>

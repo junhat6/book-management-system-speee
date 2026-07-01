@@ -1,0 +1,29 @@
+<% content_for :title, "ログイン" %>
+
+<div class="mx-auto max-w-md">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl">ログイン</h1>
+
+      <%= form_with scope: :session, url: login_path, local: true, class: "space-y-4" do |form| %>
+        <div class="form-control">
+          <%= form.label :email, "メールアドレス", class: "label" %>
+          <%= form.email_field :email, class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :password, "パスワード", class: "label" %>
+          <%= form.password_field :password, class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="card-actions justify-end">
+          <%= form.submit "ログイン", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+
+      <div class="text-sm">
+        <%= link_to "新規登録はこちら", signup_path, class: "link link-primary" %>
+      </div>
+    </div>
+  </div>
+</div>

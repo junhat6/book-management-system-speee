@@ -29,3 +29,20 @@ Things you may want to cover:
 rails t                      # テスト実行と同時に coverage/ が更新される
 open coverage/index.html     # ブラウザでレポートを表示
 ```
+
+## Seedデータとログイン情報
+
+seedデータ投入:
+
+```bash
+bin/rails db:seed
+```
+
+投入されるログインユーザー:
+
+- 管理者
+	- email: admin@example.com
+	- password: 12345678
+- 一般ユーザー
+	- email: user@example.com
+	- password: 12345678
