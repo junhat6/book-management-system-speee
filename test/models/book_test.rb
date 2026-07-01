@@ -87,4 +87,37 @@ class BookTest < ActiveSupport::TestCase
 
     assert_equal [ "村上春樹" ], @book.reload.authors.map(&:name)
   end
+
+  test "既存の著者名なら新規作成せずに紐づける" do
+    @book.author_ids = []
+    @book.new_author_name = authors(:one).name
+
+    assert_no_difference("Author.count") do
+      assert @book.save
+    end
+
+    assert_equal [ authors(:one).name ], @book.reload.authors.map(&:name)
+  end
+
+  test "新規著者名の前後空白は除去して保存する" do
+    @book.author_ids = []
+    @book.new_author_name = "  村上春樹  "
+
+    assert_difference("Author.count", 1) do
+      assert @book.save
+    end
+
+    assert_equal [ "村上春樹" ], @book.reload.authors.map(&:name)
+  end
+
+  test "既に紐づいている著者名を指定しても重複して紐づけない" do
+    book = books(:one)
+    book.new_author_name = authors(:one).name
+
+    assert_no_difference("BookAuthor.count") do
+      assert book.save
+    end
+
+    assert_equal 2, book.reload.authors.count
+  end
 end
