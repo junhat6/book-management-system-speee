@@ -22,7 +22,8 @@ class BookTest < ActiveSupport::TestCase
       title: "テスト駆動開発",
       isbn: "9784274217883",
       published_year: 2017,
-      publisher: "オーム社"
+      publisher: "オーム社",
+      author_ids: [ authors(:one).id ]
     )
   end
 
@@ -61,9 +62,29 @@ class BookTest < ActiveSupport::TestCase
       title: "テスト駆動開発",
       isbn: @book.isbn,
       published_year: 2017,
-      publisher: "オーム社"
+      publisher: "オーム社",
+      author_ids: [ authors(:two).id ]
     )
     assert_not duplicate.valid?
     assert_includes duplicate.errors[:isbn], "has already been taken"
+  end
+
+  test "著者が未指定なら無効" do
+    @book.author_ids = []
+    @book.new_author_name = nil
+
+    assert_not @book.valid?
+    assert_includes @book.errors[:authors], "を1人以上指定してください"
+  end
+
+  test "新しい著者名があれば保存時に著者を作成して紐づける" do
+    @book.author_ids = []
+    @book.new_author_name = "村上春樹"
+
+    assert_difference("Author.count", 1) do
+      assert @book.save
+    end
+
+    assert_equal [ "村上春樹" ], @book.reload.authors.map(&:name)
   end
 end

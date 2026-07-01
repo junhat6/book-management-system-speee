@@ -10,6 +10,7 @@
         <thead>
           <tr>
             <th>タイトル</th>
+            <th>著者</th>
             <th>ISBN</th>
             <th>出版年</th>
             <th>出版社</th>
@@ -22,6 +23,7 @@
               <td class="font-medium">
                 <%= link_to book.title, book_path(book), class: "link link-hover" %>
               </td>
+              <td><%= book.authors.map(&:name).join("、") %></td>
               <td><%= book.isbn %></td>
               <td><%= book.published_year %></td>
               <td><%= book.publisher %></td>

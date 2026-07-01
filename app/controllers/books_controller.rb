@@ -1,8 +1,9 @@
 class BooksController < ApplicationController
   before_action :set_book, only: [ :show, :edit, :update, :destroy ]
+  before_action :prepare_authors, only: [ :new, :edit, :create, :update ]
 
   def index
-    @books = Book.order(created_at: :desc)
+    @books = Book.includes(:authors).order(created_at: :desc)
   end
 
   def show
@@ -40,10 +41,14 @@ class BooksController < ApplicationController
   private
 
   def set_book
-    @book = Book.find(params[:id])
+    @book = Book.includes(:authors).find(params[:id])
+  end
+
+  def prepare_authors
+    @authors = Author.order(:name)
   end
 
   def book_params
-    params.require(:book).permit(:title, :isbn, :published_year, :publisher)
+    params.require(:book).permit(:title, :isbn, :published_year, :publisher, :new_author_name, author_ids: [])
   end
 end

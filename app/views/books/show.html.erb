@@ -4,6 +4,9 @@
       <h1 class="card-title text-2xl mb-4"><%= @book.title %></h1>
 
       <dl class="grid grid-cols-3 gap-y-3 text-sm">
+        <dt class="text-base-content/60">著者</dt>
+        <dd class="col-span-2"><%= @book.authors.map(&:name).join("、") %></dd>
+
         <dt class="text-base-content/60">ISBN</dt>
         <dd class="col-span-2"><%= @book.isbn %></dd>
 

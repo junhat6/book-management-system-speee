@@ -19,7 +19,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
   test "should create book" do
     assert_difference("Book.count") do
-      post books_url, params: { book: { title: "New Book", isbn: "111111111111", published_year: 2020, publisher: "New Publisher" } }
+      post books_url, params: { book: { title: "New Book", isbn: "111111111111", published_year: 2020, publisher: "New Publisher", author_ids: [ authors(:one).id ] } }
     end
     assert_redirected_to book_url(Book.last)
   end
@@ -39,13 +39,14 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
   test "should update book" do
     book = books(:one)
-    patch book_url(book), params: { book: { title: "Updated Title", isbn: "222222222222", published_year: 2021, publisher: "Updated Publisher" } }
+    patch book_url(book), params: { book: { title: "Updated Title", isbn: "222222222222", published_year: 2021, publisher: "Updated Publisher", author_ids: [ authors(:two).id ] } }
     assert_redirected_to book_url(book)
     book.reload
     assert_equal "Updated Title", book.title
     assert_equal "222222222222", book.isbn
     assert_equal 2021, book.published_year
     assert_equal "Updated Publisher", book.publisher
+    assert_equal [ "太宰治" ], book.authors.map(&:name)
   end
 
   test "should not update book with invalid data" do

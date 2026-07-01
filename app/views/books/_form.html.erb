@@ -32,6 +32,24 @@
     <%= form.text_field :publisher, class: "input input-bordered w-full" %>
   </div>
 
+  <div class="space-y-2">
+    <%= form.label :author_ids, "著者（既存）", class: "label" %>
+    <% if @authors.any? %>
+      <%= form.collection_select :author_ids, @authors, :id, :name, {},
+            { multiple: true, class: "select select-bordered w-full min-h-32" } %>
+      <p class="text-sm text-base-content/60">複数選択できます。既存著者がない場合は下の入力欄から追加してください。</p>
+    <% else %>
+      <div class="alert alert-info">
+        <span>既存著者がまだありません。下の入力欄から新しい著者を追加できます。</span>
+      </div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :new_author_name, "新しい著者を追加", class: "label" %>
+    <%= form.text_field :new_author_name, class: "input input-bordered w-full", placeholder: "著者名" %>
+  </div>
+
   <div class="flex justify-end gap-2 pt-2">
     <%= link_to "キャンセル", books_path, class: "btn btn-ghost" %>
     <%= form.submit submit_label, class: "btn btn-primary" %>
