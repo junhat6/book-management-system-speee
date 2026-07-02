@@ -1,0 +1,15 @@
+<p>
+  以下のリンクからパスワードを再設定できます。
+</p>
+
+<p>
+  <%= link_to "パスワードを再設定する", edit_password_url(@user.password_reset_token) %>
+</p>
+
+<p>
+  このリンクの有効期限は <%= (@user.password_reset_token_expires_in / 60).to_i %>分です。
+</p>
+
+<p>
+  心当たりがない場合は、このメールを無視してください。
+</p>

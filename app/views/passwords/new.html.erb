@@ -1,0 +1,26 @@
+<% content_for :title, "パスワード再設定" %>
+
+<div class="mx-auto max-w-md">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl">パスワード再設定</h1>
+
+      <p class="text-sm">登録済みのメールアドレスを入力してください。パスワード再設定用のリンクをお送りします。</p>
+
+      <%= form_with url: passwords_path, local: true, class: "space-y-4" do |form| %>
+        <div class="form-control">
+          <%= form.label :email_address, "メールアドレス", class: "label" %>
+          <%= form.email_field :email_address, class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="card-actions justify-end">
+          <%= form.submit "再設定メールを送る", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+
+      <div class="text-sm">
+        <%= link_to "ログインはこちら", new_session_path, class: "link link-primary" %>
+      </div>
+    </div>
+  </div>
+</div>

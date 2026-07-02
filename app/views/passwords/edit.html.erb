@@ -1,0 +1,25 @@
+<% content_for :title, "パスワード再設定" %>
+
+<div class="mx-auto max-w-md">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl">新しいパスワードを設定</h1>
+
+      <%= form_with url: password_path(params[:token]), method: :patch, local: true, class: "space-y-4" do |form| %>
+        <div class="form-control">
+          <%= form.label :password, "新しいパスワード", class: "label" %>
+          <%= form.password_field :password, class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="form-control">
+          <%= form.label :password_confirmation, "新しいパスワード（確認）", class: "label" %>
+          <%= form.password_field :password_confirmation, class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="card-actions justify-end">
+          <%= form.submit "パスワードを更新する", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

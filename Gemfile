@@ -66,6 +66,9 @@ group :development do
 
   # Detect N+1 queries and unused eager loading during development [https://github.com/flyerhzm/bullet]
   gem "bullet"
+
+  # Preview sent emails in the browser instead of actually delivering them [https://github.com/fgrehm/letter_opener_web]
+  gem "letter_opener_web", "~> 3.0"
 end
 
 group :test do
