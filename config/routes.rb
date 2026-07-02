@@ -3,8 +3,6 @@ Rails.application.routes.draw do
   resources :books, only: [ :index, :show, :new, :create, :edit, :update, :destroy ]
   get "signup", to: "users#new"
   resources :users, only: [ :create ]
-  get "login", to: "sessions#new"
-  post "login", to: "sessions#create"
-  delete "logout", to: "sessions#destroy"
+  resource :session
   root "books#index"
 end

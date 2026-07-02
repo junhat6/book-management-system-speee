@@ -18,8 +18,8 @@
         </div>
 
         <div class="form-control">
-          <%= form.label :email, "メールアドレス", class: "label" %>
-          <%= form.email_field :email, class: "input input-bordered w-full" %>
+          <%= form.label :email_address, "メールアドレス", class: "label" %>
+          <%= form.email_field :email_address, class: "input input-bordered w-full" %>
         </div>
 
         <div class="form-control">
@@ -38,7 +38,7 @@
       <% end %>
 
       <div class="text-sm">
-        <%= link_to "ログインはこちら", login_path, class: "link link-primary" %>
+        <%= link_to "ログインはこちら", new_session_path, class: "link link-primary" %>
       </div>
     </div>
   </div>

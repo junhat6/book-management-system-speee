@@ -1,4 +1,4 @@
-admin_user = User.find_or_initialize_by(email: "admin@example.com")
+admin_user = User.find_or_initialize_by(email_address: "admin@example.com")
 admin_user.assign_attributes(
   name: "管理者",
   password: "12345678",
@@ -7,7 +7,7 @@ admin_user.assign_attributes(
 )
 admin_user.save!
 
-general_user = User.find_or_initialize_by(email: "user@example.com")
+general_user = User.find_or_initialize_by(email_address: "user@example.com")
 general_user.assign_attributes(
   name: "一般ユーザー",
   password: "12345678",

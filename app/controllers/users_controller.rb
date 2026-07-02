@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  allow_unauthenticated_access only: %i[ new create ]
+
   def new
     @user = User.new
   end
@@ -7,8 +9,7 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
 
     if @user.save
-      reset_session
-      session[:user_id] = @user.id
+      start_new_session_for @user
       redirect_to root_path, notice: "会員登録が完了しました"
     else
       render :new, status: :unprocessable_entity
@@ -18,6 +19,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:name, :email, :password, :password_confirmation)
+    params.require(:user).permit(:name, :email_address, :password, :password_confirmation)
   end
 end

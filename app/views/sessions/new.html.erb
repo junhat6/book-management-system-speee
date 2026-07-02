@@ -5,10 +5,10 @@
     <div class="card-body">
       <h1 class="card-title text-2xl">ログイン</h1>
 
-      <%= form_with scope: :session, url: login_path, local: true, class: "space-y-4" do |form| %>
+      <%= form_with url: session_path, local: true, class: "space-y-4" do |form| %>
         <div class="form-control">
-          <%= form.label :email, "メールアドレス", class: "label" %>
-          <%= form.email_field :email, class: "input input-bordered w-full" %>
+          <%= form.label :email_address, "メールアドレス", class: "label" %>
+          <%= form.email_field :email_address, class: "input input-bordered w-full" %>
         </div>
 
         <div class="form-control">

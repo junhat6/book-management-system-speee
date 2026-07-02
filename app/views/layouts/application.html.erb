@@ -30,12 +30,12 @@
           <%= link_to "図書管理システム", root_path, class: "btn btn-ghost text-xl" %>
         </div>
         <div class="navbar-end">
-          <% if logged_in? %>
-            <span class="mr-3 text-sm text-base-content/70"><%= current_user.name %></span>
-            <%= link_to "ログアウト", logout_path, data: { turbo_method: :delete }, class: "btn btn-ghost btn-sm" %>
+          <% if authenticated? %>
+            <span class="mr-3 text-sm text-base-content/70"><%= Current.user.name %></span>
+            <%= link_to "ログアウト", session_path, data: { turbo_method: :delete }, class: "btn btn-ghost btn-sm" %>
             <%= link_to "本を登録", new_book_path, class: "btn btn-primary btn-sm" %>
           <% else %>
-            <%= link_to "ログイン", login_path, class: "btn btn-ghost btn-sm" %>
+            <%= link_to "ログイン", new_session_path, class: "btn btn-ghost btn-sm" %>
             <%= link_to "新規登録", signup_path, class: "btn btn-primary btn-sm" %>
           <% end %>
         </div>

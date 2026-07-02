@@ -1,28 +1,21 @@
 class SessionsController < ApplicationController
+  allow_unauthenticated_access only: %i[ new create ]
+  rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_session_path, alert: "しばらく時間をおいてから再度お試しください" }
+
   def new
   end
 
   def create
-    user = User.find_by(email: session_params[:email].to_s.strip.downcase)
-
-    if user&.authenticate(session_params[:password])
-      reset_session
-      session[:user_id] = user.id
-      redirect_to root_path, notice: "ログインしました"
+    if user = User.authenticate_by(params.permit(:email_address, :password))
+      start_new_session_for user
+      redirect_to after_authentication_url, notice: "ログインしました"
     else
-      flash.now[:alert] = "メールアドレスまたはパスワードが正しくありません"
-      render :new, status: :unprocessable_entity
+      redirect_to new_session_path, alert: "メールアドレスまたはパスワードが正しくありません"
     end
   end
 
   def destroy
-    session.delete(:user_id)
-    redirect_to root_path, notice: "ログアウトしました"
-  end
-
-  private
-
-  def session_params
-    params.require(:session).permit(:email, :password)
+    terminate_session
+    redirect_to root_path, notice: "ログアウトしました", status: :see_other
   end
 end

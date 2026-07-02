@@ -6,7 +6,7 @@ require "test_helper"
 #
 #  id              :integer          not null, primary key
 #  admin           :boolean          default(FALSE), not null
-#  email           :string           not null
+#  email_address   :string           not null
 #  name            :string           not null
 #  password_digest :string           not null
 #  created_at      :datetime         not null
@@ -14,13 +14,13 @@ require "test_helper"
 #
 # Indexes
 #
-#  index_users_on_email  (email) UNIQUE
+#  index_users_on_email_address  (email_address) UNIQUE
 #
 class UserTest < ActiveSupport::TestCase
   def setup
     @user = User.new(
       name: "山田太郎",
-      email: "taro@example.com",
+      email_address: "taro@example.com",
       password: "password123",
       password_confirmation: "password123"
     )
@@ -36,8 +36,8 @@ class UserTest < ActiveSupport::TestCase
     assert_not @user.valid?
   end
 
-  test "email が空なら無効" do
-    @user.email = ""
+  test "email_address が空なら無効" do
+    @user.email_address = ""
 
     assert_not @user.valid?
   end
@@ -48,24 +48,24 @@ class UserTest < ActiveSupport::TestCase
     assert_not @user.valid?
   end
 
-  test "email が重複していれば無効" do
+  test "email_address が重複していれば無効" do
     @user.save!
     duplicate = User.new(
       name: "別ユーザー",
-      email: @user.email.upcase,
+      email_address: @user.email_address.upcase,
       password: "password123",
       password_confirmation: "password123"
     )
 
     assert_not duplicate.valid?
-    assert_includes duplicate.errors[:email], "has already been taken"
+    assert_includes duplicate.errors[:email_address], "has already been taken"
   end
 
-  test "email は小文字化して保存される" do
-    @user.email = "TARO@EXAMPLE.COM"
+  test "email_address は前後の空白を除去して小文字化される" do
+    @user.email_address = "  TARO@EXAMPLE.COM  "
 
     @user.save!
 
-    assert_equal "taro@example.com", @user.reload.email
+    assert_equal "taro@example.com", @user.reload.email_address
   end
 end

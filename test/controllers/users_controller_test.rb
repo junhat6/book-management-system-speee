@@ -11,7 +11,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
       post users_url, params: {
         user: {
           name: "新規ユーザー",
-          email: "new-user@example.com",
+          email_address: "new-user@example.com",
           password: "password123",
           password_confirmation: "password123"
         }
@@ -29,7 +29,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
       post users_url, params: {
         user: {
           name: "",
-          email: "",
+          email_address: "",
           password: "short",
           password_confirmation: "different"
         }
