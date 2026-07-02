@@ -8,6 +8,8 @@ gem "propshaft"
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
 gem "importmap-rails"
+# Use sqlite3 as the database for Active Record
+gem "sqlite3", ">= 2.1"
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
 gem "turbo-rails"
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
@@ -44,8 +46,6 @@ gem "image_processing", "~> 1.2"
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
-  # Use sqlite3 as the database for Active Record
-  gem "sqlite3", ">= 2.1"
 
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
@@ -86,9 +86,6 @@ group :test do
   gem "simplecov", require: false
 end
 
-group :production do
-  # Use PostgreSQL as the database for Active Record
-  gem "pg"
-end
-
 gem "tailwindcss-rails", "~> 4.6"
+
+gem "dockerfile-rails", ">= 1.7", group: :development

@@ -23,16 +23,16 @@ gatsby = Book.find_or_initialize_by(isbn: "978-3-16-148410-0")
 gatsby.assign_attributes(
   title: "The Great Gatsby",
   published_year: 1925,
-  publisher: "Scribner"
+  publisher: "Scribner",
+  new_author_name: fitzgerald.name
 )
 gatsby.save!
-gatsby.authors = [ fitzgerald ]
 
 mockingbird = Book.find_or_initialize_by(isbn: "978-0-06-112008-4")
 mockingbird.assign_attributes(
   title: "To Kill a Mockingbird",
   published_year: 1960,
-  publisher: "J.B. Lippincott & Co."
+  publisher: "J.B. Lippincott & Co.",
+  new_author_name: lee.name
 )
 mockingbird.save!
-mockingbird.authors = [ lee ]

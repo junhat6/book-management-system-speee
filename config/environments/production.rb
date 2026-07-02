@@ -58,12 +58,10 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  # Render's free plan blocks outbound SMTP traffic, so the host is read from
-  # an env var set in the Render dashboard rather than hardcoded here.
   config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "example.com") }
 
   # Send mail via Resend's HTTP API instead of SMTP (see config/initializers/resend.rb
-  # for the API key). SMTP itself is blocked on Render's free tier.
+  # for the API key).
   config.action_mailer.delivery_method = :resend
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to

@@ -24,17 +24,21 @@ test:
 # is mounted as a persistent Docker volume in config/deploy.yml.
 production:
   primary:
-    adapter: postgresql
+    <<: *default
+    database: storage/production.sqlite3
     url: <%= ENV["DATABASE_URL"] %>
   cache:
-    adapter: postgresql
-    url: <%= ENV["DATABASE_URL"] %>
+    <<: *default
+    database: storage/production_cache.sqlite3
     migrations_paths: db/cache_migrate
+    url: <%= URI.parse(ENV["DATABASE_URL"]).tap { |url| url.path += "_cache" } if ENV["DATABASE_URL"] %>
   queue:
-    adapter: postgresql
-    url: <%= ENV["DATABASE_URL"] %>
+    <<: *default
+    database: storage/production_queue.sqlite3
     migrations_paths: db/queue_migrate
+    url: <%= URI.parse(ENV["DATABASE_URL"]).tap { |url| url.path += "_queue" } if ENV["DATABASE_URL"] %>
   cable:
-    adapter: postgresql
-    url: <%= ENV["DATABASE_URL"] %>
+    <<: *default
+    database: storage/production_cable.sqlite3
     migrations_paths: db/cable_migrate
+    url: <%= URI.parse(ENV["DATABASE_URL"]).tap { |url| url.path += "_cable" } if ENV["DATABASE_URL"] %>
