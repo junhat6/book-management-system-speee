@@ -17,6 +17,7 @@
 class Book < ApplicationRecord
   has_many :book_authors, dependent: :destroy
   has_many :authors, through: :book_authors
+  has_many :rentals, dependent: :restrict_with_error
 
   attr_reader :new_author_name
 
@@ -30,6 +31,14 @@ class Book < ApplicationRecord
 
   def new_author_name=(value)
     @new_author_name = value.to_s.strip.presence
+  end
+
+  def rented?
+    rentals.active.exists?
+  end
+
+  def active_rental
+    rentals.active.first
   end
 
   private
