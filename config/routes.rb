@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   resources :books, only: [ :index, :show, :new, :create, :edit, :update, :destroy ] do
     resources :rentals, only: [ :create ]
   end
+  resources :rentals, only: [ :update ]
   get "signup", to: "users#new"
   resources :users, only: [ :create ]
   resource :session
