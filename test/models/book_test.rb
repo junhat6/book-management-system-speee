@@ -128,4 +128,41 @@ class BookTest < ActiveSupport::TestCase
   test "アクティブな貸出があれば rented? はtrue" do
     assert books(:two).rented?
   end
+
+  test "タイトルの部分一致で検索できる" do
+    matched = Book.create!(title: "吾輩は猫である", isbn: "1111111111111", published_year: 1905, publisher: "大倉書店", author_ids: [ authors(:one).id ])
+    unmatched = Book.create!(title: "人間失格", isbn: "2222222222222", published_year: 1948, publisher: "筑摩書房", author_ids: [ authors(:two).id ])
+
+    results = Book.search("吾輩")
+
+    assert_includes results, matched
+    assert_not_includes results, unmatched
+  end
+
+  test "著者名の部分一致で検索できる" do
+    matched = Book.create!(title: "こころ", isbn: "3333333333333", published_year: 1914, publisher: "岩波書店", author_ids: [ authors(:one).id ])
+    unmatched = Book.create!(title: "人間失格", isbn: "4444444444444", published_year: 1948, publisher: "筑摩書房", author_ids: [ authors(:two).id ])
+
+    results = Book.search("漱石")
+
+    assert_includes results, matched
+    assert_not_includes results, unmatched
+  end
+
+  test "該当が無ければ空" do
+    assert_empty Book.search("存在しない検索語")
+  end
+
+  test "検索語が空なら全件" do
+    assert_equal Book.count, Book.search("").count
+    assert_equal Book.count, Book.search(nil).count
+  end
+
+  test "共著本でも重複しない" do
+    book = books(:one)
+
+    results = Book.search(book.title)
+
+    assert_equal 1, results.where(id: book.id).count
+  end
 end
