@@ -29,6 +29,15 @@ class Book < ApplicationRecord
 
   before_save :attach_new_author
 
+  scope :search, ->(query) {
+    return all if query.blank?
+
+    q = "%#{sanitize_sql_like(query)}%"
+    left_joins(:authors)
+      .where("books.title LIKE :q OR authors.name LIKE :q", q: q)
+      .distinct
+  }
+
   def new_author_name=(value)
     @new_author_name = value.to_s.strip.presence
   end
