@@ -6,6 +6,24 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "should get index with q param" do
+    matched = Book.create!(title: "こころ", isbn: "5555555555555", published_year: 1914, publisher: "岩波書店", author_ids: [ authors(:one).id ])
+    unmatched = Book.create!(title: "人間失格", isbn: "6666666666666", published_year: 1948, publisher: "筑摩書房", author_ids: [ authors(:two).id ])
+
+    get books_url(q: "こころ")
+
+    assert_response :success
+    assert_match matched.title, response.body
+    assert_no_match(/#{Regexp.escape(unmatched.title)}/, response.body)
+  end
+
+  test "should show no results message when search has no matches" do
+    get books_url(q: "存在しない検索語")
+
+    assert_response :success
+    assert_match "該当する本が見つかりませんでした", response.body
+  end
+
   test "should get show" do
     book = books(:one)
     get book_url(book)

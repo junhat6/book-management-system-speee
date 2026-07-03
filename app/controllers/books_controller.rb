@@ -4,7 +4,7 @@ class BooksController < ApplicationController
   before_action :prepare_authors, only: [ :new, :edit, :create, :update ]
 
   def index
-    @books = Book.includes(:authors).order(created_at: :desc)
+    @books = Book.search(params[:q]).includes(:authors).order(created_at: :desc)
   end
 
   def show
