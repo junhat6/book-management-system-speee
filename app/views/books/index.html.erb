@@ -3,6 +3,14 @@
   <span class="badge badge-neutral"><%= @books.size %> 冊</span>
 </div>
 
+<%= form_with url: books_path, method: :get, class: "mb-6" do |form| %>
+  <div class="join w-full max-w-md">
+    <%= form.text_field :q, value: params[:q], placeholder: "タイトル・著者名で検索",
+          class: "input input-bordered join-item w-full" %>
+    <%= form.submit "検索", class: "btn btn-primary join-item" %>
+  </div>
+<% end %>
+
 <% if @books.any? %>
   <div class="card bg-base-100 shadow-sm">
     <div class="overflow-x-auto">
@@ -40,6 +48,12 @@
           <% end %>
         </tbody>
       </table>
+    </div>
+  </div>
+<% elsif params[:q].present? %>
+  <div class="hero bg-base-100 rounded-box py-16">
+    <div class="hero-content text-center">
+      <p class="text-base-content/60">該当する本が見つかりませんでした。</p>
     </div>
   </div>
 <% else %>
