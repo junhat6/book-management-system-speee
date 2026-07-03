@@ -28,6 +28,29 @@ class RentalsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to book_url(book)
   end
 
+  test "本人は自分の貸出を返却できる" do
+    sign_in_as users(:two)
+    rental = rentals(:one)
+    patch rental_url(rental)
+    assert_redirected_to book_url(rental.book)
+    assert_not_nil rental.reload.returned_at
+  end
+
+  test "他人の貸出は返却できない" do
+    sign_in_as users(:one)
+    rental = rentals(:one)
+    patch rental_url(rental)
+    assert_response :not_found
+    assert_nil rental.reload.returned_at
+  end
+
+  test "未ログインなら返却しようとするとログイン画面へリダイレクトされる" do
+    rental = rentals(:one)
+    patch rental_url(rental)
+    assert_redirected_to new_session_url
+    assert_nil rental.reload.returned_at
+  end
+
   private
 
   def sign_in_as(user)
