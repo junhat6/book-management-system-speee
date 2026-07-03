@@ -19,7 +19,12 @@
 
       <div class="mt-4">
         <% if @book.rented? %>
-          <span class="badge badge-error">貸出中</span>
+          <% if authenticated? && @book.active_rental.user == Current.user %>
+            <span class="badge badge-warning">貸出中（あなた）</span>
+            <%= button_to "返却する", rental_path(@book.active_rental), method: :patch, class: "btn btn-warning" %>
+          <% else %>
+            <span class="badge badge-error">貸出中</span>
+          <% end %>
         <% elsif authenticated? %>
           <%= button_to "借りる", book_rentals_path(@book), class: "btn btn-primary" %>
         <% else %>
