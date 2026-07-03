@@ -120,4 +120,12 @@ class BookTest < ActiveSupport::TestCase
 
     assert_equal 2, book.reload.authors.count
   end
+
+  test "貸出中でなければ rented? はfalse" do
+    assert_not books(:one).rented?
+  end
+
+  test "アクティブな貸出があれば rented? はtrue" do
+    assert books(:two).rented?
+  end
 end
