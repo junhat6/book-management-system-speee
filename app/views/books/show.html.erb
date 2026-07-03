@@ -17,6 +17,16 @@
         <dd class="col-span-2"><%= @book.publisher %></dd>
       </dl>
 
+      <div class="mt-4">
+        <% if @book.rented? %>
+          <span class="badge badge-error">貸出中</span>
+        <% elsif authenticated? %>
+          <%= button_to "借りる", book_rentals_path(@book), class: "btn btn-primary" %>
+        <% else %>
+          <%= link_to "ログインして借りる", new_session_path, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+
       <div class="card-actions justify-between mt-6">
         <%= link_to "一覧へ戻る", books_path, class: "btn btn-ghost" %>
         <div class="flex gap-2">
