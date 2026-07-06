@@ -22,6 +22,7 @@
             <th>ISBN</th>
             <th>出版年</th>
             <th>出版社</th>
+            <th>在庫</th>
             <th class="text-right">操作</th>
           </tr>
         </thead>
@@ -35,6 +36,13 @@
               <td><%= book.isbn %></td>
               <td><%= book.published_year %></td>
               <td><%= book.publisher %></td>
+              <td>
+                <% if book.available_stock_count.positive? %>
+                  <span class="badge badge-success"><%= book.available_stock_count %>/<%= book.stock_count %></span>
+                <% else %>
+                  <span class="badge badge-error">0/<%= book.stock_count %></span>
+                <% end %>
+              </td>
               <td class="text-right">
                 <div class="flex justify-end gap-1">
                   <%= link_to "詳細", book_path(book), class: "btn btn-xs btn-outline" %>

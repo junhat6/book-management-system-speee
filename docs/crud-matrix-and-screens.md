@@ -7,7 +7,8 @@
 ```mermaid
 erDiagram
   users ||--o{ rentals : "借りる"
-  books ||--o{ rentals : "貸し出される"
+  books ||--o{ book_copies : "在庫を持つ"
+  book_copies ||--o{ rentals : "貸し出される"
   books ||--|{ book_authors : ""
   authors ||--|{ book_authors : ""
 
@@ -25,6 +26,10 @@ erDiagram
     int published_year
     string publisher
   }
+  book_copies {
+    int id PK
+    int book_id FK "物理的な1冊 = 1行。在庫数はコピーの行数から導出"
+  }
   authors {
     int id PK
     string name UK
@@ -37,14 +42,14 @@ erDiagram
   rentals {
     int id PK
     int user_id FK
-    int book_id FK "returned_at IS NULL の行のみ book_id 一意"
+    int book_copy_id FK "returned_at IS NULL の行のみ book_copy_id 一意"
     datetime returned_at
   }
 ```
 
 ## 2. CRUDマトリクス
 
-| ユーザーの役割 | 書籍データ（著者含む） | 貸出データ | 会員データ |
+| ユーザーの役割 | 書籍データ（著者・在庫含む） | 貸出データ | 会員データ |
 |---|---|---|---|
 | ゲスト（未ログイン） | R | — | C（新規登録） |
 | 一般ユーザー | R | C, R, U（自分の分だけ） | R, U（自分の分だけ） |
@@ -61,6 +66,8 @@ erDiagram
 | 書籍削除 | DELETE /books/:id | books#destroy | 管理者 |
 | 貸出 | POST /books/:book_id/rentals | rentals#create | ログイン必須 |
 | 返却 | PATCH /rentals/:id | rentals#update | ログイン必須（本人のみ） |
+| 在庫追加 | POST /books/:book_id/copies | book_copies#create | 管理者 |
+| 在庫削除 | DELETE /books/:book_id/copies/:id | book_copies#destroy | 管理者 |
 | 貸出履歴 | GET /rentals | rentals#index | ログイン必須（一般=自分のみ／管理者=全件） |
 | 会員登録 | GET /signup, POST /users | users#new, users#create | 未ログイン |
 | ログイン | GET /session/new, POST /session | sessions#new, sessions#create | 未ログイン |
