@@ -15,22 +15,64 @@
 
         <dt class="text-base-content/60">出版社</dt>
         <dd class="col-span-2"><%= @book.publisher %></dd>
+
+        <dt class="text-base-content/60">在庫</dt>
+        <dd class="col-span-2">
+          全 <%= @book.stock_count %> 冊中 <%= @book.available_stock_count %> 冊が貸出可能
+        </dd>
       </dl>
 
       <div class="mt-4">
-        <% if @book.rented? %>
-          <% if authenticated? && @book.active_rental.user == Current.user %>
-            <span class="badge badge-warning">貸出中（あなた）</span>
-            <%= button_to "返却する", rental_path(@book.active_rental), method: :patch, class: "btn btn-warning" %>
-          <% else %>
-            <span class="badge badge-error">貸出中</span>
-          <% end %>
+        <% if authenticated? && (my_rental = @book.active_rental_for(Current.user)) %>
+          <span class="badge badge-warning">貸出中（あなた）</span>
+          <%= button_to "返却する", rental_path(my_rental), method: :patch, class: "btn btn-warning" %>
+        <% elsif @book.available_stock_count.zero? %>
+          <span class="badge badge-error">在庫なし（全冊貸出中）</span>
         <% elsif authenticated? %>
           <%= button_to "借りる", book_rentals_path(@book), class: "btn btn-primary" %>
         <% else %>
           <%= link_to "ログインして借りる", new_session_path, class: "btn btn-primary" %>
         <% end %>
       </div>
+
+      <% if authenticated? %>
+        <div class="mt-6">
+          <h2 class="font-bold mb-2">在庫管理</h2>
+          <% if @book.copies.any? %>
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>管理番号</th>
+                  <th>状態</th>
+                  <th class="text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @book.copies.each do |copy| %>
+                  <tr>
+                    <td>#<%= copy.id %></td>
+                    <td>
+                      <% if copy.available? %>
+                        <span class="badge badge-success">貸出可</span>
+                      <% else %>
+                        <span class="badge badge-error">貸出中</span>
+                      <% end %>
+                    </td>
+                    <td class="text-right">
+                      <%= button_to "削除", book_copy_path(@book, copy), method: :delete,
+                            class: "btn btn-xs btn-error btn-outline",
+                            form: { data: { turbo_confirm: "「#{@book.title}」の在庫 ##{copy.id} を削除します。よろしいですか？" } } %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          <% else %>
+            <p class="text-sm text-base-content/60">在庫がありません。</p>
+          <% end %>
+          <%= button_to "在庫を1冊追加", book_copies_path(@book), class: "btn btn-sm btn-outline mt-2" %>
+        </div>
+      <% end %>
 
       <div class="card-actions justify-between mt-6">
         <%= link_to "一覧へ戻る", books_path, class: "btn btn-ghost" %>

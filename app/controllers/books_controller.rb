@@ -4,7 +4,7 @@ class BooksController < ApplicationController
   before_action :prepare_authors, only: [ :new, :edit, :create, :update ]
 
   def index
-    @books = Book.search(params[:q]).includes(:authors).order(created_at: :desc)
+    @books = Book.search(params[:q]).includes(:authors, copies: :rentals).order(created_at: :desc)
   end
 
   def show
@@ -35,14 +35,17 @@ class BooksController < ApplicationController
   end
 
   def destroy
-    @book.destroy
-    redirect_to books_path, notice: "Book was successfully destroyed.", status: :see_other
+    if @book.destroy
+      redirect_to books_path, notice: "Book was successfully destroyed.", status: :see_other
+    else
+      redirect_to @book, alert: @book.errors.full_messages.to_sentence, status: :see_other
+    end
   end
 
   private
 
   def set_book
-    @book = Book.includes(:authors).find(params[:id])
+    @book = Book.includes(:authors, copies: :rentals).find(params[:id])
   end
 
   def prepare_authors
@@ -50,6 +53,6 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params.require(:book).permit(:title, :isbn, :published_year, :publisher, :new_author_name, author_ids: [])
+    params.require(:book).permit(:title, :isbn, :published_year, :publisher, :new_author_name, :initial_stock_count, author_ids: [])
   end
 end

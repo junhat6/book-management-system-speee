@@ -50,6 +50,15 @@
     <%= form.text_field :new_author_name, class: "input input-bordered w-full", placeholder: "著者名" %>
   </div>
 
+  <% if @book.new_record? %>
+    <div>
+      <%= form.label :initial_stock_count, "冊数（在庫）", class: "label" %>
+      <%= form.number_field :initial_stock_count, value: @book.initial_stock_count || 1, min: 1,
+            class: "input input-bordered w-full" %>
+      <p class="text-sm text-base-content/60">登録後は書籍詳細ページから在庫を追加・削除できます。</p>
+    </div>
+  <% end %>
+
   <div class="flex justify-end gap-2 pt-2">
     <%= link_to "キャンセル", books_path, class: "btn btn-ghost" %>
     <%= form.submit submit_label, class: "btn btn-primary" %>

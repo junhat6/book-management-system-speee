@@ -121,12 +121,53 @@ class BookTest < ActiveSupport::TestCase
     assert_equal 2, book.reload.authors.count
   end
 
-  test "貸出中でなければ rented? はfalse" do
-    assert_not books(:one).rented?
+  test "stock_count は登録済みコピーの冊数を返す" do
+    assert_equal 1, books(:one).stock_count
+    assert_equal 2, books(:two).stock_count
   end
 
-  test "アクティブな貸出があれば rented? はtrue" do
-    assert books(:two).rented?
+  test "available_stock_count は貸出中を除いた冊数を返す" do
+    assert_equal 1, books(:one).available_stock_count
+    assert_equal 1, books(:two).available_stock_count
+  end
+
+  test "available_copy は空いているコピーを返す" do
+    assert_equal book_copies(:two_copy_b), books(:two).available_copy
+  end
+
+  test "全コピーが貸出中なら available_copy は nil" do
+    Rental.create!(user: users(:one), book_copy: book_copies(:two_copy_b))
+
+    assert_nil books(:two).reload.available_copy
+  end
+
+  test "active_rental_for は自分のアクティブな貸出を返す" do
+    assert_equal rentals(:one), books(:two).active_rental_for(users(:two))
+    assert_nil books(:two).active_rental_for(users(:one))
+  end
+
+  test "initial_stock_count を指定して登録するとその冊数のコピーが作られる" do
+    @book.initial_stock_count = 3
+
+    assert_difference("BookCopy.count", 3) { @book.save! }
+  end
+
+  test "initial_stock_count 未指定なら1冊のコピーが作られる" do
+    assert_difference("BookCopy.count", 1) { @book.save! }
+  end
+
+  test "initial_stock_count が0以下なら無効" do
+    @book.initial_stock_count = 0
+
+    assert_not @book.valid?
+  end
+
+  test "貸出履歴のあるコピーを持つ本は削除できない" do
+    assert_no_difference("Book.count") { books(:two).destroy }
+  end
+
+  test "貸出履歴がなければコピーごと本を削除できる" do
+    assert_difference("Book.count" => -1, "BookCopy.count" => -1) { books(:one).destroy }
   end
 
   test "タイトルの部分一致で検索できる" do

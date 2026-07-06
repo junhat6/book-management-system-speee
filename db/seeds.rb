@@ -87,11 +87,45 @@ ActiveRecord::Base.transaction do
   all_users = [ general_user, *readers ]
   all_books = [ gatsby, mockingbird, *books ]
 
-  # 書籍は「同時に1人にしか貸し出せない」という制約(Rental#book_must_be_available と
-  # rentals テーブルの部分ユニークインデックス)を持つ。過去の貸出は時系列で重ならないように
-  # 積み上げ、最後の1件だけ returned_at を nil のままにすると「現在貸出中」の書籍になる。
+  # 在庫管理: 3割の書籍は複数冊（2〜3冊）の在庫を持たせる。
+  # 乱数列を固定しているため、再実行しても同じ書籍が同じ冊数になり増殖しない。
+  all_books.each do |book|
+    next unless Faker::Config.random.rand < 0.3
+
+    desired_stock = Faker::Config.random.rand(2..3)
+    (desired_stock - book.copies.count).times { book.copies.create! }
+  end
+
+  # 貸出はコピー単位で「同時に1人まで」という制約(Rental#copy_must_be_available と
+  # rentals テーブルの部分ユニークインデックス)を持つ。過去の貸出は返却済みで積み上げ、
+  # returned_at を nil のままにした1件が「現在貸出中」のコピーになる。
   # 既にRentalが存在する場合は再実行時の増殖を避けるためスキップする。
   if Rental.none?
-    # TODO(human): all_books の各書籍に対して貸出履歴(Rentalレコード)を生成する
+    all_books.each do |book|
+      book.copies.each do |copy|
+        # 過去の貸出履歴（返却済み）を0〜2件、時系列が重ならないように積む
+        history_count = Faker::Config.random.rand(0..2)
+        history_count.times do |i|
+          borrowed_on = (history_count - i + 1).months.ago
+          Rental.create!(
+            user: all_users.sample(random: Faker::Config.random),
+            book_copy: copy,
+            created_at: borrowed_on,
+            returned_at: borrowed_on + Faker::Config.random.rand(3..14).days
+          )
+        end
+
+        # 3割のコピーは現在貸出中にする。
+        # 「同じ本を同じユーザーが二重に借りない」バリデーションに当たった場合はスキップする。
+        if Faker::Config.random.rand < 0.3
+          rental = Rental.new(
+            user: all_users.sample(random: Faker::Config.random),
+            book_copy: copy,
+            created_at: Faker::Config.random.rand(1..10).days.ago
+          )
+          rental.save
+        end
+      end
+    end
   end
 end

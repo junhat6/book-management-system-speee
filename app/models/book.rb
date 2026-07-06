@@ -17,17 +17,24 @@
 class Book < ApplicationRecord
   has_many :book_authors, dependent: :destroy
   has_many :authors, through: :book_authors
-  has_many :rentals, dependent: :restrict_with_error
+  has_many :copies, class_name: "BookCopy", dependent: :destroy
+  has_many :rentals, through: :copies
 
-  attr_reader :new_author_name
+  attr_reader :new_author_name, :initial_stock_count
 
   validates :title, presence: true
   validates :isbn, presence: true, uniqueness: true
   validates :published_year, numericality: { only_integer: true, greater_than: 0 }, presence: true
   validates :publisher, presence: true
+  validates :initial_stock_count, numericality: { only_integer: true, greater_than_or_equal_to: 1 },
+            allow_nil: true, on: :create
   validate :must_have_author
 
   before_save :attach_new_author
+  # prepend しないと copies の dependent: :destroy が先に走り、
+  # 履歴チェックの前にコピー削除が始まってしまう
+  before_destroy :must_not_have_rental_history, prepend: true
+  after_create :create_initial_copies
 
   scope :search, ->(query) {
     return all if query.blank?
@@ -42,12 +49,27 @@ class Book < ApplicationRecord
     @new_author_name = value.to_s.strip.presence
   end
 
-  def rented?
-    rentals.active.exists?
+  def initial_stock_count=(value)
+    @initial_stock_count = value.presence&.to_i
   end
 
-  def active_rental
-    rentals.active.first
+  def stock_count
+    copies.size
+  end
+
+  # copies: :rentals を preload しておけば追加クエリなしで数えられる
+  def available_stock_count
+    copies.count { |copy| copy.available? }
+  end
+
+  def available_copy
+    copies.available.first
+  end
+
+  def active_rental_for(user)
+    return nil if user.nil?
+
+    rentals.active.find_by(user: user)
   end
 
   private
@@ -56,6 +78,17 @@ class Book < ApplicationRecord
     return if authors.any? || new_author_name.present?
 
     errors.add(:authors, "を1人以上指定してください")
+  end
+
+  def create_initial_copies
+    (initial_stock_count || 1).times { copies.create! }
+  end
+
+  def must_not_have_rental_history
+    return unless rentals.exists?
+
+    errors.add(:base, "貸出履歴があるため削除できません")
+    throw :abort
   end
 
   def attach_new_author
