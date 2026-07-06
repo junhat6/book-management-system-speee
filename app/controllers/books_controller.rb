@@ -1,5 +1,6 @@
 class BooksController < ApplicationController
   allow_unauthenticated_access only: [ :index, :show ]
+  before_action :require_admin, except: [ :index, :show ]
   before_action :set_book, only: [ :show, :edit, :update, :destroy ]
   before_action :prepare_authors, only: [ :new, :edit, :create, :update ]
 

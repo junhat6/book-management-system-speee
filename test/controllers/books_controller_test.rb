@@ -95,6 +95,67 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to books_url
   end
 
+  # --- 発展要件1: ユーザー権限（書籍の登録・編集・削除は管理者のみ） ---
+
+  test "一般ユーザーは書籍登録画面にアクセスできない" do
+    sign_in_as users(:two)
+    get new_book_url
+    assert_redirected_to root_url
+  end
+
+  test "一般ユーザーは書籍を登録できない" do
+    sign_in_as users(:two)
+    assert_no_difference("Book.count") do
+      post books_url, params: { book: { title: "New Book", isbn: "111111111111", published_year: 2020, publisher: "New Publisher", author_ids: [ authors(:one).id ] } }
+    end
+    assert_redirected_to root_url
+  end
+
+  test "一般ユーザーは書籍編集画面にアクセスできない" do
+    sign_in_as users(:two)
+    get edit_book_url(books(:one))
+    assert_redirected_to root_url
+  end
+
+  test "一般ユーザーは書籍を更新できない" do
+    sign_in_as users(:two)
+    book = books(:one)
+    patch book_url(book), params: { book: { title: "改ざんされたタイトル" } }
+    assert_redirected_to root_url
+    assert_not_equal "改ざんされたタイトル", book.reload.title
+  end
+
+  test "一般ユーザーは書籍を削除できない" do
+    sign_in_as users(:two)
+    assert_no_difference("Book.count") do
+      delete book_url(books(:one))
+    end
+    assert_redirected_to root_url
+  end
+
+  test "管理者の一覧には登録・編集・削除ボタンが表示される" do
+    sign_in_as users(:one)
+    get books_url
+    assert_select "a", text: "本を登録"
+    assert_select "a", text: "編集"
+    assert_select "button", text: "削除"
+  end
+
+  test "一般ユーザーの一覧には登録・編集・削除ボタンが表示されない" do
+    sign_in_as users(:two)
+    get books_url
+    assert_select "a", text: "本を登録", count: 0
+    assert_select "a", text: "編集", count: 0
+    assert_select "button", text: "削除", count: 0
+  end
+
+  test "一般ユーザーの詳細画面には編集・削除ボタンが表示されない" do
+    sign_in_as users(:two)
+    get book_url(books(:one))
+    assert_select "a", text: "編集", count: 0
+    assert_select "button", text: "削除", count: 0
+  end
+
   private
 
   def sign_in_as(user)
