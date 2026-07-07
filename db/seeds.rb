@@ -90,7 +90,7 @@ PRODUCTION_BOOKS = [
   { title: "犬神家の一族", author: "横溝 正史", publisher: "角川文庫", published_year: 1972, isbn: "978-4-04-130405-1", tags: %w[ミステリー 小説] },
   { title: "容疑者Xの献身", author: "東野 圭吾", publisher: "文春文庫", published_year: 2008, isbn: "978-4-16-711012-3", tags: %w[ミステリー 小説] },
   { title: "火車", author: "宮部 みゆき", publisher: "新潮文庫", published_year: 1998, isbn: "978-4-10-136918-1", tags: %w[ミステリー 小説] },
-  { title: "時をかける少女", author: "筒井 康隆", publisher: "角川文庫", published_year: 2006, isbn: "978-4-04-130521-8", tags: %w[SF 小説] },
+  { title: "時をかける少女", author: "筒井 康隆", publisher: "角川文庫", published_year: 2006, isbn: "978-4-04-130521-8", tags: %w[SF 小説] }
 ].freeze
 
 production_books = PRODUCTION_BOOKS.map do |data|
