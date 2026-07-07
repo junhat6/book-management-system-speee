@@ -31,7 +31,8 @@
         </div>
         <div class="navbar-end">
           <% if authenticated? %>
-            <span class="mr-3 text-sm text-base-content/70"><%= Current.user.name %></span>
+            <%# スマートフォン幅ではボタンを優先し、ユーザー名は隠す %>
+            <span class="mr-3 text-sm text-base-content/70 hidden sm:inline"><%= Current.user.name %></span>
             <%= link_to "ログアウト", session_path, data: { turbo_method: :delete }, class: "btn btn-ghost btn-sm" %>
             <% if admin? %>
               <%= link_to "本を登録", new_book_path, class: "btn btn-primary btn-sm" %>

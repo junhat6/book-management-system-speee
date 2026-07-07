@@ -1,10 +1,12 @@
 <div class="flex items-center justify-between mb-6">
   <h1 class="text-2xl font-bold">蔵書一覧</h1>
-  <span class="badge badge-neutral"><%= @books.size %> 冊</span>
+  <span class="badge badge-neutral"><%= @books.total_count %> 冊</span>
 </div>
 
 <%= form_with url: books_path, method: :get, class: "mb-6" do |form| %>
   <%= form.hidden_field :tag_id, value: params[:tag_id] %>
+  <%= form.hidden_field :sort, value: params[:sort] %>
+  <%= form.hidden_field :direction, value: params[:direction] %>
   <div class="join w-full max-w-md">
     <%= form.text_field :q, value: params[:q], placeholder: "タイトル・著者名で検索",
           class: "input input-bordered join-item w-full" %>
@@ -16,21 +18,60 @@
   <div class="mb-4 flex items-center gap-2">
     <span class="text-sm text-base-content/60">タグで絞り込み中:</span>
     <span class="badge badge-primary"><%= @current_tag.name %></span>
-    <%= link_to "解除", books_path(q: params[:q].presence), class: "link link-hover text-sm" %>
+    <%= link_to "解除", books_path(preserved_list_params(tag_id: nil)), class: "link link-hover text-sm" %>
   </div>
 <% end %>
 
 <% if @books.any? %>
-  <div class="card bg-base-100 shadow-sm">
+  <%# md 未満はテーブルを隠してカードに切り替えるため、並び替えの入口をここに置く %>
+  <div class="md:hidden mb-3 flex items-center gap-4 text-sm">
+    <span class="text-base-content/60">並び替え:</span>
+    <%= sort_link "title", "タイトル" %>
+    <%= sort_link "published_year", "出版年" %>
+  </div>
+
+  <%# スマートフォン向け: 書籍1冊 = 1カードの縦リスト %>
+  <div class="md:hidden space-y-3">
+    <% @books.each do |book| %>
+      <div class="book-card card bg-base-100 shadow-sm">
+        <div class="card-body p-4 gap-2">
+          <div class="flex items-start justify-between gap-2">
+            <h2 class="card-title text-base">
+              <%= link_to book.title, book_path(book), class: "link link-hover" %>
+            </h2>
+            <%= render "stock_badge", book: book %>
+          </div>
+          <p class="text-sm text-base-content/70"><%= book.authors.map(&:name).join("、") %></p>
+          <p class="text-xs text-base-content/50">
+            <%= book.publisher %>・<%= book.published_year %>年・ISBN: <%= book.isbn %>
+          </p>
+          <% if book.tags.any? %>
+            <div class="flex flex-wrap gap-1">
+              <% book.tags.each do |tag| %>
+                <%= link_to tag.name, books_path(preserved_list_params(tag_id: tag.id)),
+                      class: "badge badge-outline badge-primary badge-sm" %>
+              <% end %>
+            </div>
+          <% end %>
+          <div class="card-actions justify-end">
+            <%= render "actions", book: book %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# md 以上: 従来のテーブル表示 %>
+  <div class="card bg-base-100 shadow-sm hidden md:block">
     <div class="overflow-x-auto">
       <table class="table">
         <thead>
           <tr>
-            <th>タイトル</th>
+            <th><%= sort_link "title", "タイトル" %></th>
             <th>著者</th>
             <th>タグ</th>
             <th>ISBN</th>
-            <th>出版年</th>
+            <th><%= sort_link "published_year", "出版年" %></th>
             <th>出版社</th>
             <th>在庫</th>
             <th class="text-right">操作</th>
@@ -46,7 +87,7 @@
               <td>
                 <div class="flex flex-wrap gap-1">
                   <% book.tags.each do |tag| %>
-                    <%= link_to tag.name, books_path(tag_id: tag.id, q: params[:q].presence),
+                    <%= link_to tag.name, books_path(preserved_list_params(tag_id: tag.id)),
                           class: "badge badge-outline badge-primary" %>
                   <% end %>
                 </div>
@@ -54,28 +95,28 @@
               <td><%= book.isbn %></td>
               <td><%= book.published_year %></td>
               <td><%= book.publisher %></td>
-              <td>
-                <% if book.available_stock_count.positive? %>
-                  <span class="badge badge-success"><%= book.available_stock_count %>/<%= book.stock_count %></span>
-                <% else %>
-                  <span class="badge badge-error">0/<%= book.stock_count %></span>
-                <% end %>
-              </td>
+              <td><%= render "stock_badge", book: book %></td>
               <td class="text-right">
                 <div class="flex justify-end gap-1">
-                  <%= link_to "詳細", book_path(book), class: "btn btn-xs btn-outline" %>
-                  <% if admin? %>
-                    <%= link_to "編集", edit_book_path(book), class: "btn btn-xs btn-outline" %>
-                    <%= button_to "削除", book_path(book), method: :delete,
-                          class: "btn btn-xs btn-error btn-outline",
-                          form: { data: { turbo_confirm: "「#{book.title}」を削除します。よろしいですか？" } } %>
-                  <% end %>
+                  <%= render "actions", book: book %>
                 </div>
               </td>
             </tr>
           <% end %>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <%= paginate @books %>
+<% elsif @books.total_count.positive? %>
+  <%# 直接 URL で総ページ数を超えるページを指定した場合。絞り込み・並び順は保持したまま1ページ目へ誘導する %>
+  <div class="hero bg-base-100 rounded-box py-16">
+    <div class="hero-content text-center">
+      <div>
+        <p class="text-base-content/60 mb-4">このページには本がありません。</p>
+        <%= link_to "1ページ目へ戻る", books_path(preserved_list_params), class: "btn btn-primary btn-sm" %>
+      </div>
     </div>
   </div>
 <% elsif params[:q].present? || @current_tag %>
