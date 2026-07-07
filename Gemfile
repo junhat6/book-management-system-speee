@@ -20,6 +20,9 @@ gem "jbuilder"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Paginate Active Record relations with a scope-chainable page/per API [https://github.com/kaminari/kaminari]
+gem "kaminari"
+
 # Send production email via Resend's HTTP API instead of SMTP [https://github.com/resend/resend-ruby]
 gem "resend"
 
