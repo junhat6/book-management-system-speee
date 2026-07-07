@@ -35,7 +35,7 @@
         <% end %>
       </div>
 
-      <% if authenticated? %>
+      <% if admin? %>
         <div class="mt-6">
           <h2 class="font-bold mb-2">在庫管理</h2>
           <% if @book.copies.any? %>

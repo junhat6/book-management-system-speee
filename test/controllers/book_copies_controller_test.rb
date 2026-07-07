@@ -8,12 +8,28 @@ class BookCopiesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_url
   end
 
-  test "ログイン済みなら在庫を1冊追加できる" do
+  test "管理者は在庫を1冊追加できる" do
     sign_in_as users(:one)
     assert_difference("BookCopy.count", 1) do
       post book_copies_url(books(:one))
     end
     assert_redirected_to book_url(books(:one))
+  end
+
+  test "一般ユーザーは在庫を追加できない" do
+    sign_in_as users(:two)
+    assert_no_difference("BookCopy.count") do
+      post book_copies_url(books(:one))
+    end
+    assert_redirected_to root_url
+  end
+
+  test "一般ユーザーは在庫を削除できない" do
+    sign_in_as users(:two)
+    assert_no_difference("BookCopy.count") do
+      delete book_copy_url(books(:two), book_copies(:two_copy_b))
+    end
+    assert_redirected_to root_url
   end
 
   test "貸出履歴のないコピーは削除できる" do
