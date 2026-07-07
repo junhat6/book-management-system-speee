@@ -95,9 +95,24 @@ erDiagram
     datetime created_at "作成日時"
     datetime updated_at "更新日時"
   }
+  book_tags {
+    int id PK "書籍タグID"
+    int book_id FK "書籍ID (book_id と tag_id の組み合わせで一意)"
+    int tag_id FK "タグID"
+    datetime created_at "作成日時"
+    datetime updated_at "更新日時"
+  }
+  tags {
+    int id PK "タグID"
+    string name UK "タグ名（ジャンル・タグ共通）"
+    datetime created_at "作成日時"
+    datetime updated_at "更新日時"
+  }
   users ||--o{ rentals : ""
   rentals }o--|| book_items : ""
   book_items }|--|| books : ""
   books ||--|{ book_authors : ""
   authors ||--|{ book_authors : ""
+  books ||--o{ book_tags : ""
+  tags ||--o{ book_tags : ""
 ```
