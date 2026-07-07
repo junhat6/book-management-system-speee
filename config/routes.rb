@@ -6,7 +6,7 @@ Rails.application.routes.draw do
     resources :rentals, only: [ :create ]
     resources :copies, controller: "book_copies", only: [ :create, :destroy ]
   end
-  resources :rentals, only: [ :update ]
+  resources :rentals, only: [ :index, :update ]
   get "signup", to: "users#new"
   resources :users, only: [ :create ]
   resource :session
