@@ -1,4 +1,5 @@
 class BookCopiesController < ApplicationController
+  before_action :require_admin
   before_action :set_book
 
   def create
