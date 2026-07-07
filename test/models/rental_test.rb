@@ -62,4 +62,37 @@ class RentalTest < ActiveSupport::TestCase
 
     assert_raises(ActiveRecord::RecordNotUnique) { bypass.save!(validate: false) }
   end
+
+  test "with_status(\"active\") は貸出中の履歴のみを返す" do
+    assert_equal [ rentals(:one) ], Rental.with_status("active").to_a
+  end
+
+  test "with_status(\"returned\") は返却済みの履歴のみを返す" do
+    assert_equal [ rentals(:two) ], Rental.with_status("returned").to_a
+  end
+
+  test "with_status に不正な値・空値を渡すと絞り込まれない" do
+    assert_equal Rental.all.to_a, Rental.with_status("invalid").to_a
+    assert_equal Rental.all.to_a, Rental.with_status(nil).to_a
+  end
+
+  test "sorted はデフォルトで貸出日の新しい順" do
+    assert_equal [ rentals(:one), rentals(:two) ], Rental.sorted(nil, nil).to_a
+  end
+
+  test "sorted(\"created_at\", \"asc\") で貸出日の古い順に並び替えられる" do
+    assert_equal [ rentals(:two), rentals(:one) ], Rental.sorted("created_at", "asc").to_a
+  end
+
+  test "sorted(\"returned_at\", \"asc\") で返却日の古い順に並び替えられる" do
+    older = Rental.create!(user: users(:one), book_copy: book_copies(:one_copy_a), returned_at: 15.days.ago)
+
+    result = Rental.where(id: [ older.id, rentals(:two).id ]).sorted("returned_at", "asc")
+
+    assert_equal [ older, rentals(:two) ], result.to_a
+  end
+
+  test "sorted に許可されていないカラムを渡すと貸出日の新しい順にフォールバックする" do
+    assert_equal Rental.sorted(nil, nil).to_a, Rental.sorted("user_id", "asc").to_a
+  end
 end
