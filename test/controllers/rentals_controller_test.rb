@@ -9,6 +9,16 @@ class RentalsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_url
   end
 
+  test "一般ユーザーでも借りられる" do
+    sign_in_as users(:two)
+    book = books(:one)
+    assert_difference("Rental.count", 1) do
+      post book_rentals_url(book)
+    end
+    assert_redirected_to book_url(book)
+    assert_equal users(:two), book.reload.active_rental_for(users(:two)).user
+  end
+
   test "ログイン済みなら空いているコピーが自動で割り当てられて借りられる" do
     sign_in_as users(:one)
     book = books(:one)

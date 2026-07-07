@@ -46,10 +46,12 @@
               <td class="text-right">
                 <div class="flex justify-end gap-1">
                   <%= link_to "詳細", book_path(book), class: "btn btn-xs btn-outline" %>
-                  <%= link_to "編集", edit_book_path(book), class: "btn btn-xs btn-outline" %>
-                  <%= button_to "削除", book_path(book), method: :delete,
-                        class: "btn btn-xs btn-error btn-outline",
-                        form: { data: { turbo_confirm: "「#{book.title}」を削除します。よろしいですか？" } } %>
+                  <% if admin? %>
+                    <%= link_to "編集", edit_book_path(book), class: "btn btn-xs btn-outline" %>
+                    <%= button_to "削除", book_path(book), method: :delete,
+                          class: "btn btn-xs btn-error btn-outline",
+                          form: { data: { turbo_confirm: "「#{book.title}」を削除します。よろしいですか？" } } %>
+                  <% end %>
                 </div>
               </td>
             </tr>
@@ -69,7 +71,9 @@
     <div class="hero-content text-center">
       <div>
         <p class="text-base-content/60 mb-4">本はまだ登録されていません。</p>
-        <%= link_to "最初の本を登録する", new_book_path, class: "btn btn-primary" %>
+        <% if admin? %>
+          <%= link_to "最初の本を登録する", new_book_path, class: "btn btn-primary" %>
+        <% end %>
       </div>
     </div>
   </div>
