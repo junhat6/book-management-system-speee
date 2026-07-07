@@ -1,7 +1,3 @@
-# 乱数列を固定し、`rails db:seed` を何度実行しても同じ値が生成されるようにする。
-# find_or_create 系のメソッドと組み合わせることで、再実行してもレコードが増殖しない冪等なシードになる。
-Faker::Config.random = Random.new(42)
-
 admin_user = User.find_or_initialize_by(email_address: "admin@example.com")
 admin_user.assign_attributes(
   name: "管理者",
@@ -42,6 +38,14 @@ mockingbird.assign_attributes(
 mockingbird.save!
 
 # --- ここから先は開発・動作確認用にダミーデータを大量生成する ---
+# Faker は Gemfile 上 :development, :test グループ限定のgemであり、本番ビルドには
+# 含まれない（Dockerfileの BUNDLE_WITHOUT="development" 経由）。誤って本番で
+# db:seed を実行してもクラッシュしないよう、この先のブロックは本番では実行しない。
+return if Rails.env.production?
+
+# 乱数列を固定し、`rails db:seed` を何度実行しても同じ値が生成されるようにする。
+# find_or_create 系のメソッドと組み合わせることで、再実行してもレコードが増殖しない冪等なシードになる。
+Faker::Config.random = Random.new(42)
 
 NUMBER_OF_READERS = 20
 NUMBER_OF_AUTHORS = 40
