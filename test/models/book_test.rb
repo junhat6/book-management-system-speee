@@ -206,4 +206,68 @@ class BookTest < ActiveSupport::TestCase
 
     assert_equal 1, results.where(id: book.id).count
   end
+
+  # --- 発展要件3: タグ・ジャンル管理（多対多） ---
+
+  test "タグが無くても有効" do
+    @book.tag_ids = []
+
+    assert @book.valid?
+  end
+
+  test "tag_ids で既存タグを紐づけられる" do
+    tag = Tag.create!(name: "技術書")
+    @book.tag_ids = [ tag.id ]
+
+    assert @book.save
+    assert_equal [ "技術書" ], @book.reload.tags.map(&:name)
+  end
+
+  test "new_tag_names で複数の新しいタグを作成して紐づける（読点・カンマ区切り）" do
+    @book.new_tag_names = "技術書、Ruby, 入門"
+
+    assert_difference("Tag.count", 3) do
+      assert @book.save
+    end
+
+    assert_equal [ "Ruby", "入門", "技術書" ], @book.reload.tags.map(&:name).sort
+  end
+
+  test "既存のタグ名なら新規作成せずに紐づける" do
+    Tag.create!(name: "技術書")
+    @book.new_tag_names = "技術書"
+
+    assert_no_difference("Tag.count") do
+      assert @book.save
+    end
+
+    assert_equal [ "技術書" ], @book.reload.tags.map(&:name)
+  end
+
+  test "既に紐づいているタグ名を指定しても重複して紐づけない" do
+    tag = Tag.create!(name: "技術書")
+    @book.tag_ids = [ tag.id ]
+    @book.save!
+    @book.new_tag_names = "技術書"
+
+    assert_no_difference("BookTag.count") do
+      assert @book.save
+    end
+  end
+
+  test "with_tag は指定タグが付いた本だけを返す" do
+    tag = Tag.create!(name: "技術書")
+    tagged = Book.create!(title: "リーダブルコード", isbn: "9999999999999", published_year: 2012, publisher: "オライリー", author_ids: [ authors(:one).id ], tag_ids: [ tag.id ])
+    untagged = books(:one)
+
+    results = Book.with_tag(tag.id)
+
+    assert_includes results, tagged
+    assert_not_includes results, untagged
+  end
+
+  test "with_tag に空を渡すと全件" do
+    assert_equal Book.count, Book.with_tag(nil).count
+    assert_equal Book.count, Book.with_tag("").count
+  end
 end

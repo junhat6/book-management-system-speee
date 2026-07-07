@@ -16,6 +16,19 @@
         <dt class="text-base-content/60">出版社</dt>
         <dd class="col-span-2"><%= @book.publisher %></dd>
 
+        <dt class="text-base-content/60">タグ</dt>
+        <dd class="col-span-2">
+          <% if @book.tags.any? %>
+            <div class="flex flex-wrap gap-1">
+              <% @book.tags.each do |tag| %>
+                <%= link_to tag.name, books_path(tag_id: tag.id), class: "badge badge-outline badge-primary" %>
+              <% end %>
+            </div>
+          <% else %>
+            <span class="text-base-content/40">未設定</span>
+          <% end %>
+        </dd>
+
         <dt class="text-base-content/60">在庫</dt>
         <dd class="col-span-2">
           全 <%= @book.stock_count %> 冊中 <%= @book.available_stock_count %> 冊が貸出可能
