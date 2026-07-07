@@ -22,7 +22,7 @@ class Book < ApplicationRecord
   has_many :copies, class_name: "BookCopy", dependent: :destroy
   has_many :rentals, through: :copies
 
-  attr_reader :new_author_name, :new_tag_names, :initial_stock_count
+  attr_reader :new_author_names, :new_tag_names, :initial_stock_count
 
   validates :title, presence: true
   validates :isbn, presence: true, uniqueness: true
@@ -32,7 +32,7 @@ class Book < ApplicationRecord
             allow_nil: true, on: :create
   validate :must_have_author
 
-  before_save :attach_new_author
+  before_save :attach_new_authors
   before_save :attach_new_tags
   # prepend しないと copies の dependent: :destroy が先に走り、
   # 履歴チェックの前にコピー削除が始まってしまう
@@ -68,8 +68,8 @@ class Book < ApplicationRecord
     end
   }
 
-  def new_author_name=(value)
-    @new_author_name = value.to_s.strip.presence
+  def new_author_names=(value)
+    @new_author_names = value.to_s.strip.presence
   end
 
   def new_tag_names=(value)
@@ -102,7 +102,7 @@ class Book < ApplicationRecord
   private
 
   def must_have_author
-    return if authors.any? || new_author_name.present?
+    return if authors.any? || new_author_names.present?
 
     errors.add(:authors, "を1人以上指定してください")
   end
@@ -118,11 +118,13 @@ class Book < ApplicationRecord
     throw :abort
   end
 
-  def attach_new_author
-    return if new_author_name.blank?
-
-    author = Author.find_or_create_by!(name: new_author_name)
-    authors << author unless authors.exists?(author.id)
+  # タグと同じく読点・カンマ区切りで複数登録できるようにする
+  # （Google Books API が著者を配列で返すため、複数著者を個別レコードとして扱う）
+  def attach_new_authors
+    new_author_names.to_s.split(/[、,]/).map(&:strip).reject(&:blank?).uniq.each do |name|
+      author = Author.find_or_create_by!(name: name)
+      authors << author unless authors.exists?(author.id)
+    end
   end
 
   def attach_new_tags

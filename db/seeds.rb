@@ -28,7 +28,7 @@ gatsby.assign_attributes(
   title: "The Great Gatsby",
   published_year: 1925,
   publisher: "Scribner",
-  new_author_name: fitzgerald.name
+  new_author_names: fitzgerald.name
 )
 gatsby.save!
 
@@ -37,7 +37,7 @@ mockingbird.assign_attributes(
   title: "To Kill a Mockingbird",
   published_year: 1960,
   publisher: "J.B. Lippincott & Co.",
-  new_author_name: lee.name
+  new_author_names: lee.name
 )
 mockingbird.save!
 
@@ -71,7 +71,7 @@ ActiveRecord::Base.transaction do
       title: Faker::Book.title,
       published_year: Faker::Config.random.rand(1950..2025),
       publisher: Faker::Book.publisher,
-      new_author_name: authors.sample(random: Faker::Config.random).name
+      new_author_names: authors.sample(random: Faker::Config.random).name
     )
     book.save!
 

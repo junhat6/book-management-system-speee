@@ -296,7 +296,91 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_select "th a[href*='sort=title'][href*='q=ruby']"
   end
 
+  # --- 発展要件6: 外部 API 連携（ISBN から Google Books で書誌情報を自動取得） ---
+
+  test "登録画面に ISBN 自動取得フォームが表示される" do
+    sign_in_as users(:one)
+
+    get new_book_url
+
+    assert_select "form[action=?][method=?]", new_book_path, "get" do
+      assert_select "input[name='lookup_isbn']"
+    end
+  end
+
+  test "ISBN 検索がヒットすると登録フォームに書誌情報が反映される" do
+    sign_in_as users(:one)
+    stub_google_books_hit("9784873115658")
+
+    get new_book_url(lookup_isbn: "978-4-87311-565-8")
+
+    assert_response :success
+    assert_select "input[name='book[isbn]'][value='9784873115658']"
+    assert_select "input[name='book[title]'][value='リーダブルコード']"
+    assert_select "input[name='book[publisher]'][value='オライリージャパン']"
+    assert_select "input[name='book[published_year]'][value='2012']"
+    assert_select "input[name='book[new_author_names]'][value='Dustin Boswell、Trevor Foucher']"
+    assert_match "書籍情報を取得しました", response.body
+  end
+
+  test "ヒットしない ISBN は手入力を促すメッセージを表示し ISBN 入力値は保持される" do
+    sign_in_as users(:one)
+    stub_request(:get, "https://www.googleapis.com/books/v1/volumes")
+      .with(query: { q: "isbn:9999999999999" })
+      .to_return(status: 200, body: { totalItems: 0 }.to_json)
+
+    get new_book_url(lookup_isbn: "9999999999999")
+
+    assert_response :success
+    assert_match "見つかりませんでした", response.body
+    assert_select "input[name='book[isbn]'][value='9999999999999']"
+    assert_select "input[name='book[title]']:not([value])"
+  end
+
+  test "API 障害時は失敗メッセージを表示して手入力にフォールバックできる" do
+    sign_in_as users(:one)
+    stub_request(:get, "https://www.googleapis.com/books/v1/volumes")
+      .with(query: { q: "isbn:9784873115658" })
+      .to_return(status: 500, body: "Internal Server Error")
+
+    get new_book_url(lookup_isbn: "9784873115658")
+
+    assert_response :success
+    assert_match "取得に失敗しました", response.body
+    assert_select "input[name='book[isbn]'][value='9784873115658']"
+  end
+
+  test "lookup_isbn なしの登録画面では API に問い合わせない" do
+    sign_in_as users(:one)
+
+    get new_book_url
+
+    assert_not_requested :get, /googleapis/
+  end
+
   private
+
+  def stub_google_books_hit(isbn)
+    stub_request(:get, "https://www.googleapis.com/books/v1/volumes")
+      .with(query: { q: "isbn:#{isbn}" })
+      .to_return(
+        status: 200,
+        body: {
+          totalItems: 1,
+          items: [
+            {
+              volumeInfo: {
+                title: "リーダブルコード",
+                authors: [ "Dustin Boswell", "Trevor Foucher" ],
+                publisher: "オライリージャパン",
+                publishedDate: "2012-06"
+              }
+            }
+          ]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+  end
 
   def sign_in_as(user)
     post session_url, params: { email_address: user.email_address, password: "password123" }

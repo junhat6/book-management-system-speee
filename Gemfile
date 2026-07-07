@@ -82,6 +82,9 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 
+  # Stub external HTTP requests so tests never touch the real network [https://github.com/bblimke/webmock]
+  gem "webmock"
+
   # Better Minitest output (colors, test names, progress) [https://github.com/minitest-reporters/minitest-reporters]
   gem "minitest-reporters"
 
