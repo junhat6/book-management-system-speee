@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_02_151447) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_06_154432) do
   create_table "authors", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name", null: false
@@ -28,6 +28,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_151447) do
     t.index ["book_id"], name: "index_book_authors_on_book_id"
   end
 
+  create_table "book_copies", force: :cascade do |t|
+    t.integer "book_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id"], name: "index_book_copies_on_book_id"
+  end
+
   create_table "books", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "isbn"
@@ -39,13 +46,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_151447) do
   end
 
   create_table "rentals", force: :cascade do |t|
-    t.integer "book_id", null: false
+    t.integer "book_copy_id", null: false
     t.datetime "created_at", null: false
     t.datetime "returned_at"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
-    t.index ["book_id"], name: "index_rentals_on_book_id"
-    t.index ["book_id"], name: "index_rentals_on_book_id_when_active", unique: true, where: "returned_at IS NULL"
+    t.index ["book_copy_id"], name: "index_rentals_on_book_copy_id"
+    t.index ["book_copy_id"], name: "index_rentals_on_book_copy_id_when_active", unique: true, where: "returned_at IS NULL"
     t.index ["user_id"], name: "index_rentals_on_user_id"
   end
 
@@ -201,7 +208,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_151447) do
 
   add_foreign_key "book_authors", "authors"
   add_foreign_key "book_authors", "books"
-  add_foreign_key "rentals", "books"
+  add_foreign_key "book_copies", "books"
+  add_foreign_key "rentals", "book_copies"
   add_foreign_key "rentals", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
