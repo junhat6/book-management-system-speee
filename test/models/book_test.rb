@@ -270,4 +270,51 @@ class BookTest < ActiveSupport::TestCase
     assert_equal Book.count, Book.with_tag(nil).count
     assert_equal Book.count, Book.with_tag("").count
   end
+
+  # --- 発展要件5: UI/UX 改善（ソート） ---
+
+  test "sorted はタイトルで昇順・降順に並べ替える" do
+    first = Book.create!(title: "AAA ソート確認", isbn: "9780000000201", published_year: 2000, publisher: "テスト社", author_ids: [ authors(:one).id ])
+    last = Book.create!(title: "zzz ソート確認", isbn: "9780000000202", published_year: 2001, publisher: "テスト社", author_ids: [ authors(:one).id ])
+
+    asc_titles = Book.sorted("title", "asc").map(&:title)
+    assert_operator asc_titles.index(first.title), :<, asc_titles.index(last.title)
+
+    desc_titles = Book.sorted("title", "desc").map(&:title)
+    assert_operator desc_titles.index(last.title), :<, desc_titles.index(first.title)
+  end
+
+  test "sorted は出版年で並べ替えられる" do
+    oldest = Book.create!(title: "出版年ソート確認（古）", isbn: "9780000000203", published_year: 1900, publisher: "テスト社", author_ids: [ authors(:one).id ])
+    newest = Book.create!(title: "出版年ソート確認（新）", isbn: "9780000000204", published_year: 2100, publisher: "テスト社", author_ids: [ authors(:one).id ])
+
+    years = Book.sorted("published_year", "asc").map(&:published_year)
+    assert_equal 1900, years.first
+    assert_equal 2100, years.last
+  end
+
+  test "sorted は許可していないカラム名を無視して登録日降順にする" do
+    # params 由来の文字列を order に直接渡すと SQL インジェクションになるため、
+    # 許可リスト外は完全デフォルト（登録日降順）に落とす仕様
+    results = Book.sorted("isbn); DROP TABLE books;--", "asc")
+
+    assert_equal Book.order(created_at: :desc, id: :desc).map(&:id), results.map(&:id)
+  end
+
+  test "sorted は不正な direction を昇順として扱う" do
+    results = Book.sorted("title", "DELETE")
+
+    assert_equal Book.order(title: :asc, id: :desc).map(&:id), results.map(&:id)
+  end
+
+  test "sorted は並べ替えキーが同値でも順序が安定している（id を第2キーにする）" do
+    # 全順序が決まらないと LIMIT/OFFSET のページ跨ぎで同じ本が重複・欠落する
+    time = Time.current
+    older_id = Book.create!(title: "同時刻確認A", isbn: "9780000000205", published_year: 2000, publisher: "テスト社", author_ids: [ authors(:one).id ], created_at: time)
+    newer_id = Book.create!(title: "同時刻確認B", isbn: "9780000000206", published_year: 2000, publisher: "テスト社", author_ids: [ authors(:one).id ], created_at: time)
+
+    ids = Book.sorted(nil, nil).map(&:id)
+
+    assert_operator ids.index(newer_id.id), :<, ids.index(older_id.id)
+  end
 end

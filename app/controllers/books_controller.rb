@@ -9,7 +9,9 @@ class BooksController < ApplicationController
     # 存在しない tag_id は絞り込みなしとして扱う（フィルタ表示も出さない）
     @current_tag = Tag.find_by(id: params[:tag_id])
     @books = Book.search(params[:q]).with_tag(@current_tag&.id)
-                 .includes(:authors, :tags, copies: :rentals).order(created_at: :desc)
+                 .includes(:authors, :tags, copies: :rentals)
+                 .sorted(params[:sort], params[:direction])
+                 .page(params[:page])
   end
 
   def show

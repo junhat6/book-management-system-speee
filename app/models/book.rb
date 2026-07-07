@@ -54,6 +54,20 @@ class Book < ApplicationRecord
     joins(:tags).where(tags: { id: tag_id })
   }
 
+  # params 由来の値を order に直接渡すと SQL インジェクションになるため、
+  # 許可リスト外のカラムは完全デフォルト（登録日降順）に落とす。
+  # id の第2キーは、同値キーでもページ跨ぎの重複・欠落が起きないよう全順序を確定させるため
+  SORTABLE_COLUMNS = %w[title published_year].freeze
+
+  scope :sorted, ->(column, direction) {
+    if SORTABLE_COLUMNS.include?(column.to_s)
+      dir = %w[asc desc].include?(direction.to_s) ? direction.to_sym : :asc
+      order(column.to_s => dir, id: :desc)
+    else
+      order(created_at: :desc, id: :desc)
+    end
+  }
+
   def new_author_name=(value)
     @new_author_name = value.to_s.strip.presence
   end

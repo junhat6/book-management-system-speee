@@ -204,9 +204,105 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_match "技術書", response.body
   end
 
+  # --- 発展要件5: UI/UX 改善（ページネーション・ソート・レスポンシブ） ---
+
+  test "一覧は1ページ10冊でページ分割される" do
+    # fixtures の2冊と合わせて13冊にする（2ページ目に3冊）
+    11.times do |i|
+      create_book_for_listing(title: "ページ分割確認#{format('%02d', i)}", isbn: "97800000003#{format('%02d', i)}")
+    end
+
+    get books_url
+    assert_response :success
+    assert_select "tbody tr", count: 10
+    assert_select ".book-card", count: 10
+
+    get books_url(page: 2)
+    assert_response :success
+    assert_select "tbody tr", count: 3
+  end
+
+  test "2ページ以上あるときページ移動リンクが表示される" do
+    11.times do |i|
+      create_book_for_listing(title: "ページ分割確認#{format('%02d', i)}", isbn: "97800000003#{format('%02d', i)}")
+    end
+
+    get books_url
+
+    assert_select "nav.pagination" do
+      assert_select "a[href*='page=2']"
+    end
+  end
+
+  test "検索結果もページ分割され件数バッジは総数を示す" do
+    12.times do |i|
+      create_book_for_listing(title: "検索ページ確認#{format('%02d', i)}", isbn: "97800000004#{format('%02d', i)}")
+    end
+
+    get books_url(q: "検索ページ確認", page: 2)
+
+    assert_response :success
+    assert_select "tbody tr", count: 2
+    assert_match "12 冊", response.body
+  end
+
+  test "範囲外のページ番号では未登録メッセージではなく案内を表示する" do
+    get books_url(page: 999)
+
+    assert_response :success
+    assert_no_match "本はまだ登録されていません", response.body
+    assert_match "このページには本がありません", response.body
+  end
+
+  test "一覧をタイトルで昇順・降順にソートできる" do
+    first = create_book_for_listing(title: "AAA ソート確認", isbn: "9780000000501")
+    last = create_book_for_listing(title: "zzz ソート確認", isbn: "9780000000502")
+
+    get books_url(sort: "title", direction: "asc")
+    assert_response :success
+    assert_operator response.body.index(first.title), :<, response.body.index(last.title)
+
+    get books_url(sort: "title", direction: "desc")
+    assert_response :success
+    assert_operator response.body.index(last.title), :<, response.body.index(first.title)
+  end
+
+  test "一覧を出版年でソートできる" do
+    oldest = create_book_for_listing(title: "出版年ソート確認（古）", isbn: "9780000000503", published_year: 1900)
+    newest = create_book_for_listing(title: "出版年ソート確認（新）", isbn: "9780000000504", published_year: 2100)
+
+    get books_url(sort: "published_year", direction: "asc")
+    assert_response :success
+    assert_operator response.body.index(oldest.title), :<, response.body.index(newest.title)
+
+    get books_url(sort: "published_year", direction: "desc")
+    assert_response :success
+    assert_operator response.body.index(newest.title), :<, response.body.index(oldest.title)
+  end
+
+  test "テーブルヘッダにソートリンクが表示される" do
+    get books_url
+
+    assert_select "th a[href*='sort=title']"
+    assert_select "th a[href*='sort=published_year']"
+  end
+
+  test "ソートリンクは検索条件を引き継ぐ" do
+    # 検索結果が0件だとテーブルごと描画されないため、ヒットする本を用意する
+    create_book_for_listing(title: "ruby の本", isbn: "9780000000505")
+
+    get books_url(q: "ruby")
+
+    assert_select "th a[href*='sort=title'][href*='q=ruby']"
+  end
+
   private
 
   def sign_in_as(user)
     post session_url, params: { email_address: user.email_address, password: "password123" }
+  end
+
+  def create_book_for_listing(title:, isbn:, published_year: 2000)
+    Book.create!(title: title, isbn: isbn, published_year: published_year, publisher: "テスト社", author_ids: [ authors(:one).id ])
   end
 end
