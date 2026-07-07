@@ -1,6 +1,34 @@
 <div class="max-w-xl mx-auto">
   <h1 class="text-2xl font-bold mb-6">本を登録</h1>
 
+  <div class="card bg-base-100 shadow-sm mb-4">
+    <div class="card-body">
+      <h2 class="card-title text-base">ISBN から自動入力</h2>
+      <%# GET フォームなので books#new に戻ってきて、lookup_isbn パラメータで API 検索が走る %>
+      <%= form_with url: new_book_path, method: :get, class: "flex gap-2" do |form| %>
+        <%= form.text_field :lookup_isbn, value: params[:lookup_isbn],
+              placeholder: "例: 978-4-87311-565-8", class: "input input-bordered flex-1" %>
+        <%= form.submit "自動取得", class: "btn btn-secondary" %>
+      <% end %>
+      <p class="text-sm text-base-content/60">Google Books から書籍情報を取得し、下のフォームに反映します。</p>
+
+      <% case @lookup_result %>
+      <% when :found %>
+        <div role="alert" class="alert alert-success">
+          <span>書籍情報を取得しました。内容を確認・修正して登録してください。</span>
+        </div>
+      <% when :not_found %>
+        <div role="alert" class="alert alert-warning">
+          <span>この ISBN の書籍情報は見つかりませんでした。お手数ですが手入力で登録してください。</span>
+        </div>
+      <% when :error %>
+        <div role="alert" class="alert alert-error">
+          <span>書籍情報の取得に失敗しました。時間をおいて再試行するか、手入力で登録してください。</span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
   <div class="card bg-base-100 shadow-sm">
     <div class="card-body">
       <%= render "form", submit_label: "登録する" %>
