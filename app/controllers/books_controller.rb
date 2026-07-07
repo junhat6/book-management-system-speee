@@ -19,6 +19,7 @@ class BooksController < ApplicationController
 
   def new
     @book = Book.new
+    prefill_from_google_books if params[:lookup_isbn].present?
   end
 
   def create
@@ -64,6 +65,27 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params.require(:book).permit(:title, :isbn, :published_year, :publisher, :new_author_name, :new_tag_names, :initial_stock_count, author_ids: [], tag_ids: [])
+    params.require(:book).permit(:title, :isbn, :published_year, :publisher, :new_author_names, :new_tag_names, :initial_stock_count, author_ids: [], tag_ids: [])
+  end
+
+  # 発展要件6: ISBN から Google Books API で書誌情報を取得し、フォーム初期値に反映する。
+  # コントローラは結果の「状態」（@lookup_result）だけを決め、表示文言は view に置く。
+  # 取得失敗は登録を妨げない（メッセージを出して手入力にフォールバック）
+  def prefill_from_google_books
+    @book.isbn = GoogleBooks.normalize(params[:lookup_isbn])
+    volume = GoogleBooks.lookup(params[:lookup_isbn])
+
+    if volume
+      @book.title = volume.title
+      @book.publisher = volume.publisher
+      @book.published_year = volume.published_year
+      @book.new_author_names = volume.authors.join("、")
+      @lookup_result = :found
+    else
+      @lookup_result = :not_found
+    end
+  rescue GoogleBooks::Error => e
+    Rails.logger.warn("Google Books lookup failed: #{e.message}")
+    @lookup_result = :error
   end
 end

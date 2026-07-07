@@ -71,7 +71,7 @@ class BookTest < ActiveSupport::TestCase
 
   test "著者が未指定なら無効" do
     @book.author_ids = []
-    @book.new_author_name = nil
+    @book.new_author_names = nil
 
     assert_not @book.valid?
     assert_includes @book.errors[:authors], "を1人以上指定してください"
@@ -79,7 +79,7 @@ class BookTest < ActiveSupport::TestCase
 
   test "新しい著者名があれば保存時に著者を作成して紐づける" do
     @book.author_ids = []
-    @book.new_author_name = "村上春樹"
+    @book.new_author_names = "村上春樹"
 
     assert_difference("Author.count", 1) do
       assert @book.save
@@ -90,7 +90,7 @@ class BookTest < ActiveSupport::TestCase
 
   test "既存の著者名なら新規作成せずに紐づける" do
     @book.author_ids = []
-    @book.new_author_name = authors(:one).name
+    @book.new_author_names = authors(:one).name
 
     assert_no_difference("Author.count") do
       assert @book.save
@@ -101,7 +101,7 @@ class BookTest < ActiveSupport::TestCase
 
   test "新規著者名の前後空白は除去して保存する" do
     @book.author_ids = []
-    @book.new_author_name = "  村上春樹  "
+    @book.new_author_names = "  村上春樹  "
 
     assert_difference("Author.count", 1) do
       assert @book.save
@@ -110,9 +110,20 @@ class BookTest < ActiveSupport::TestCase
     assert_equal [ "村上春樹" ], @book.reload.authors.map(&:name)
   end
 
+  test "new_author_names は読点・カンマ区切りで複数の著者をまとめて登録できる" do
+    @book.author_ids = []
+    @book.new_author_names = "Dustin Boswell、Trevor Foucher, 村上春樹"
+
+    assert_difference("Author.count", 3) do
+      assert @book.save
+    end
+
+    assert_equal [ "Dustin Boswell", "Trevor Foucher", "村上春樹" ], @book.reload.authors.map(&:name).sort
+  end
+
   test "既に紐づいている著者名を指定しても重複して紐づけない" do
     book = books(:one)
-    book.new_author_name = authors(:one).name
+    book.new_author_names = authors(:one).name
 
     assert_no_difference("BookAuthor.count") do
       assert book.save
