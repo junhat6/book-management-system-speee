@@ -50,6 +50,24 @@
     <%= form.text_field :new_author_name, class: "input input-bordered w-full", placeholder: "著者名" %>
   </div>
 
+  <div class="space-y-2">
+    <%= form.label :tag_ids, "タグ・ジャンル（既存）", class: "label" %>
+    <% if @tags.any? %>
+      <%= form.collection_select :tag_ids, @tags, :id, :name, {},
+            { multiple: true, class: "select select-bordered w-full min-h-32" } %>
+      <p class="text-sm text-base-content/60">複数選択できます。既存タグがない場合は下の入力欄から追加してください。</p>
+    <% else %>
+      <div class="alert alert-info">
+        <span>既存タグがまだありません。下の入力欄から新しいタグを追加できます。</span>
+      </div>
+    <% end %>
+  </div>
+
+  <div>
+    <%= form.label :new_tag_names, "新しいタグを追加", class: "label" %>
+    <%= form.text_field :new_tag_names, class: "input input-bordered w-full", placeholder: "例: 技術書、Ruby（「、」区切りで複数登録）" %>
+  </div>
+
   <% if @book.new_record? %>
     <div>
       <%= form.label :initial_stock_count, "冊数（在庫）", class: "label" %>

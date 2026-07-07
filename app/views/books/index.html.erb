@@ -4,10 +4,19 @@
 </div>
 
 <%= form_with url: books_path, method: :get, class: "mb-6" do |form| %>
+  <%= form.hidden_field :tag_id, value: params[:tag_id] %>
   <div class="join w-full max-w-md">
     <%= form.text_field :q, value: params[:q], placeholder: "タイトル・著者名で検索",
           class: "input input-bordered join-item w-full" %>
     <%= form.submit "検索", class: "btn btn-primary join-item" %>
+  </div>
+<% end %>
+
+<% if @current_tag %>
+  <div class="mb-4 flex items-center gap-2">
+    <span class="text-sm text-base-content/60">タグで絞り込み中:</span>
+    <span class="badge badge-primary"><%= @current_tag.name %></span>
+    <%= link_to "解除", books_path(q: params[:q].presence), class: "link link-hover text-sm" %>
   </div>
 <% end %>
 
@@ -19,6 +28,7 @@
           <tr>
             <th>タイトル</th>
             <th>著者</th>
+            <th>タグ</th>
             <th>ISBN</th>
             <th>出版年</th>
             <th>出版社</th>
@@ -33,6 +43,14 @@
                 <%= link_to book.title, book_path(book), class: "link link-hover" %>
               </td>
               <td><%= book.authors.map(&:name).join("、") %></td>
+              <td>
+                <div class="flex flex-wrap gap-1">
+                  <% book.tags.each do |tag| %>
+                    <%= link_to tag.name, books_path(tag_id: tag.id, q: params[:q].presence),
+                          class: "badge badge-outline badge-primary" %>
+                  <% end %>
+                </div>
+              </td>
               <td><%= book.isbn %></td>
               <td><%= book.published_year %></td>
               <td><%= book.publisher %></td>
@@ -60,7 +78,7 @@
       </table>
     </div>
   </div>
-<% elsif params[:q].present? %>
+<% elsif params[:q].present? || @current_tag %>
   <div class="hero bg-base-100 rounded-box py-16">
     <div class="hero-content text-center">
       <p class="text-base-content/60">該当する本が見つかりませんでした。</p>
