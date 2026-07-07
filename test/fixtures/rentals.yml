@@ -1,14 +1,36 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one: # 貸出中：books(:two) を users(:two) が借りている
+# == Schema Information
+#
+# Table name: rentals
+#
+#  id           :integer          not null, primary key
+#  returned_at  :datetime
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  book_copy_id :integer          not null
+#  user_id      :integer          not null
+#
+# Indexes
+#
+#  index_rentals_on_book_copy_id              (book_copy_id)
+#  index_rentals_on_book_copy_id_when_active  (book_copy_id) UNIQUE WHERE returned_at IS NULL
+#  index_rentals_on_user_id                   (user_id)
+#
+# Foreign Keys
+#
+#  book_copy_id  (book_copy_id => book_copies.id)
+#  user_id       (user_id => users.id)
+#
+one: # 貸出中：books(:two) のコピーAを users(:two) が借りている
   user: two
-  book: two
+  book_copy: two_copy_a
   created_at: <%= 1.day.ago %>
   returned_at:
 
-two: # 返却済み：books(:two) を過去に users(:one) が借りて返した（現在は users(:two) が貸出中）
+two: # 返却済み：books(:two) のコピーAを過去に users(:one) が借りて返した（現在は users(:two) が貸出中）
   user: one
-  book: two
+  book_copy: two_copy_a
   created_at: <%= 10.days.ago %>
   updated_at: <%= 5.days.ago %>
   returned_at: <%= 5.days.ago %>
