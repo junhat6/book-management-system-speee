@@ -1,6 +1,45 @@
 require "test_helper"
 
 class RentalsControllerTest < ActionDispatch::IntegrationTest
+  test "未ログインなら貸出履歴一覧はログイン画面へリダイレクトされる" do
+    get rentals_url
+    assert_redirected_to new_session_url
+  end
+
+  test "一般ユーザーは自分の貸出履歴のみ閲覧できる" do
+    sign_in_as users(:two) # rentals(:one) の借主
+    get rentals_url
+    assert_response :success
+    assert_match "rental_#{rentals(:one).id}", response.body
+    assert_no_match(/rental_#{rentals(:two).id}"/, response.body)
+  end
+
+  test "管理者は全ユーザーの貸出履歴を閲覧できる" do
+    sign_in_as users(:one) # 管理者。rentals(:two) の借主でもある
+    get rentals_url
+    assert_response :success
+    assert_match "rental_#{rentals(:one).id}", response.body
+    assert_match "rental_#{rentals(:two).id}", response.body
+  end
+
+  test "管理者向けの一覧には借主のユーザー名が表示される" do
+    sign_in_as users(:one)
+    get rentals_url
+    assert_match users(:two).name, response.body
+  end
+
+  test "ステータスで絞り込める" do
+    sign_in_as users(:one) # 管理者として全件を対象に確認する
+
+    get rentals_url(status: "active")
+    assert_match "rental_#{rentals(:one).id}", response.body
+    assert_no_match(/rental_#{rentals(:two).id}"/, response.body)
+
+    get rentals_url(status: "returned")
+    assert_no_match(/rental_#{rentals(:one).id}"/, response.body)
+    assert_match "rental_#{rentals(:two).id}", response.body
+  end
+
   test "未ログインなら貸出処理はログイン画面へリダイレクトされる" do
     book = books(:one)
     assert_no_difference("Rental.count") do

@@ -4,6 +4,13 @@ class RentalsController < ApplicationController
   before_action :set_book, only: :create
   before_action :set_own_active_rental, only: :update
 
+  def index
+    @rentals = rental_scope.includes(:user, :book)
+                           .with_status(params[:status])
+                           .sorted(params[:sort], params[:direction])
+                           .page(params[:page])
+  end
+
   def create
     copy = @book.available_copy
     if copy.nil?
@@ -24,6 +31,10 @@ class RentalsController < ApplicationController
   end
 
   private
+
+  def rental_scope
+    admin? ? Rental.all : Current.user.rentals
+  end
 
   def set_book
     @book = Book.find(params[:book_id])

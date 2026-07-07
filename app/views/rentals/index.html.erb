@@ -1,0 +1,85 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold"><%= admin? ? "全ユーザーの貸出履歴" : "貸出履歴" %></h1>
+  <span class="badge badge-neutral"><%= @rentals.total_count %> 件</span>
+</div>
+
+<div class="tabs tabs-box w-fit mb-6">
+  <%= link_to "すべて", rentals_path(preserved_rental_list_params(status: nil)),
+        class: "tab #{'tab-active' if params[:status].blank?}" %>
+  <% Rental::STATUS_LABELS.each do |value, label| %>
+    <%= link_to label, rentals_path(preserved_rental_list_params(status: value)),
+          class: "tab #{'tab-active' if params[:status] == value}" %>
+  <% end %>
+</div>
+
+<% if @rentals.any? %>
+  <%# md 未満はテーブルを隠してカードに切り替えるため、並び替えの入口をここに置く %>
+  <div class="md:hidden mb-3 flex items-center gap-4 text-sm">
+    <span class="text-base-content/60">並び替え:</span>
+    <%= rental_sort_link "created_at", "貸出日" %>
+    <%= rental_sort_link "returned_at", "返却日" %>
+  </div>
+
+  <%# スマートフォン向け: 履歴1件 = 1カードの縦リスト %>
+  <div class="md:hidden space-y-3">
+    <% @rentals.each do |rental| %>
+      <div id="<%= dom_id(rental) %>" class="card bg-base-100 shadow-sm">
+        <div class="card-body p-4 gap-2">
+          <div class="flex items-start justify-between gap-2">
+            <h2 class="card-title text-base">
+              <%= link_to rental.book.title, book_path(rental.book), class: "link link-hover" %>
+            </h2>
+            <%= render "status_badge", rental: rental %>
+          </div>
+          <% if admin? %>
+            <p class="text-sm text-base-content/70">借主: <%= rental.user.name %></p>
+          <% end %>
+          <p class="text-xs text-base-content/50">
+            貸出日: <%= l rental.created_at.to_date %>
+            <% if rental.returned_at %>
+              ・返却日: <%= l rental.returned_at.to_date %>
+            <% end %>
+          </p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# md 以上: 従来のテーブル表示 %>
+  <div class="card bg-base-100 shadow-sm hidden md:block">
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>書名</th>
+            <% if admin? %><th>借主</th><% end %>
+            <th><%= rental_sort_link "created_at", "貸出日" %></th>
+            <th><%= rental_sort_link "returned_at", "返却日" %></th>
+            <th>状態</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @rentals.each do |rental| %>
+            <tr id="<%= dom_id(rental) %>" class="hover">
+              <td class="font-medium">
+                <%= link_to rental.book.title, book_path(rental.book), class: "link link-hover" %>
+              </td>
+              <% if admin? %><td><%= rental.user.name %></td><% end %>
+              <td><%= l rental.created_at.to_date %></td>
+              <td><%= rental.returned_at ? l(rental.returned_at.to_date) : "-" %></td>
+              <td><%= render "status_badge", rental: rental %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%= paginate @rentals %>
+<% else %>
+  <div class="hero bg-base-100 rounded-box py-16">
+    <div class="hero-content text-center">
+      <p class="text-base-content/60">該当する貸出履歴はありません。</p>
+    </div>
+  </div>
+<% end %>

@@ -27,6 +27,30 @@ class Rental < ApplicationRecord
 
   scope :active, -> { where(returned_at: nil) }
 
+  STATUS_LABELS = { "active" => "貸出中", "returned" => "返却済み" }.freeze
+
+  scope :with_status, ->(status) {
+    case status.to_s
+    when "active" then active
+    when "returned" then where.not(returned_at: nil)
+    else all
+    end
+  }
+
+  # params 由来の値を order に直接渡すと SQL インジェクションになるため、
+  # 許可リスト外のカラムは完全デフォルト（貸出日降順）に落とす。
+  # id の第2キーは、同値キーでもページ跨ぎの重複・欠落が起きないよう全順序を確定させるため
+  SORTABLE_COLUMNS = %w[created_at returned_at].freeze
+
+  scope :sorted, ->(column, direction) {
+    if SORTABLE_COLUMNS.include?(column.to_s)
+      dir = %w[asc desc].include?(direction.to_s) ? direction.to_sym : :asc
+      order(column.to_s => dir, id: :desc)
+    else
+      order(created_at: :desc, id: :desc)
+    end
+  }
+
   validate :copy_must_be_available, on: :create
   validate :must_not_rent_same_book_twice, on: :create
 
