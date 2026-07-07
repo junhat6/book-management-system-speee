@@ -3,9 +3,13 @@ class BooksController < ApplicationController
   before_action :require_admin, except: [ :index, :show ]
   before_action :set_book, only: [ :show, :edit, :update, :destroy ]
   before_action :prepare_authors, only: [ :new, :edit, :create, :update ]
+  before_action :prepare_tags, only: [ :new, :edit, :create, :update ]
 
   def index
-    @books = Book.search(params[:q]).includes(:authors, copies: :rentals).order(created_at: :desc)
+    # 存在しない tag_id は絞り込みなしとして扱う（フィルタ表示も出さない）
+    @current_tag = Tag.find_by(id: params[:tag_id])
+    @books = Book.search(params[:q]).with_tag(@current_tag&.id)
+                 .includes(:authors, :tags, copies: :rentals).order(created_at: :desc)
   end
 
   def show
@@ -46,14 +50,18 @@ class BooksController < ApplicationController
   private
 
   def set_book
-    @book = Book.includes(:authors, copies: :rentals).find(params[:id])
+    @book = Book.includes(:authors, :tags, copies: :rentals).find(params[:id])
   end
 
   def prepare_authors
     @authors = Author.order(:name)
   end
 
+  def prepare_tags
+    @tags = Tag.order(:name)
+  end
+
   def book_params
-    params.require(:book).permit(:title, :isbn, :published_year, :publisher, :new_author_name, :initial_stock_count, author_ids: [])
+    params.require(:book).permit(:title, :isbn, :published_year, :publisher, :new_author_name, :new_tag_names, :initial_stock_count, author_ids: [], tag_ids: [])
   end
 end

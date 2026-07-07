@@ -17,10 +17,12 @@
 class Book < ApplicationRecord
   has_many :book_authors, dependent: :destroy
   has_many :authors, through: :book_authors
+  has_many :book_tags, dependent: :destroy
+  has_many :tags, through: :book_tags
   has_many :copies, class_name: "BookCopy", dependent: :destroy
   has_many :rentals, through: :copies
 
-  attr_reader :new_author_name, :initial_stock_count
+  attr_reader :new_author_name, :new_tag_names, :initial_stock_count
 
   validates :title, presence: true
   validates :isbn, presence: true, uniqueness: true
@@ -31,6 +33,7 @@ class Book < ApplicationRecord
   validate :must_have_author
 
   before_save :attach_new_author
+  before_save :attach_new_tags
   # prepend しないと copies の dependent: :destroy が先に走り、
   # 履歴チェックの前にコピー削除が始まってしまう
   before_destroy :must_not_have_rental_history, prepend: true
@@ -45,8 +48,18 @@ class Book < ApplicationRecord
       .distinct
   }
 
+  scope :with_tag, ->(tag_id) {
+    return all if tag_id.blank?
+
+    joins(:tags).where(tags: { id: tag_id })
+  }
+
   def new_author_name=(value)
     @new_author_name = value.to_s.strip.presence
+  end
+
+  def new_tag_names=(value)
+    @new_tag_names = value.to_s.strip.presence
   end
 
   def initial_stock_count=(value)
@@ -96,5 +109,13 @@ class Book < ApplicationRecord
 
     author = Author.find_or_create_by!(name: new_author_name)
     authors << author unless authors.exists?(author.id)
+  end
+
+  def attach_new_tags
+    # 読点・カンマのどちらでも区切れるようにする（日本語入力での「、」を想定）
+    new_tag_names.to_s.split(/[、,]/).map(&:strip).reject(&:blank?).uniq.each do |name|
+      tag = Tag.find_or_create_by!(name: name)
+      tags << tag unless tags.exists?(tag.id)
+    end
   end
 end

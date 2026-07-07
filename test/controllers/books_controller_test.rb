@@ -156,6 +156,54 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_select "button", text: "削除", count: 0
   end
 
+  # --- 発展要件3: タグ・ジャンル管理（多対多） ---
+
+  test "既存タグと新規タグを付けて書籍を登録できる" do
+    sign_in_as users(:one)
+    tag = Tag.create!(name: "技術書")
+
+    post books_url, params: { book: { title: "New Book", isbn: "111111111111", published_year: 2020, publisher: "New Publisher", author_ids: [ authors(:one).id ], tag_ids: [ tag.id ], new_tag_names: "Ruby、入門" } }
+
+    book = Book.find_by!(title: "New Book")
+    assert_redirected_to book_url(book)
+    assert_equal [ "Ruby", "入門", "技術書" ], book.tags.map(&:name).sort
+  end
+
+  test "更新でタグを付け替えられる" do
+    sign_in_as users(:one)
+    book = books(:one)
+    old_tag = Tag.create!(name: "小説")
+    new_tag = Tag.create!(name: "技術書")
+    book.tags << old_tag
+
+    patch book_url(book), params: { book: { tag_ids: [ new_tag.id ] } }
+
+    assert_redirected_to book_url(book)
+    assert_equal [ "技術書" ], book.reload.tags.map(&:name)
+  end
+
+  test "一覧をタグで絞り込みできる" do
+    tag = Tag.create!(name: "技術書")
+    tagged = Book.create!(title: "リーダブルコード", isbn: "7777777777777", published_year: 2012, publisher: "オライリー", author_ids: [ authors(:one).id ], tag_ids: [ tag.id ])
+    other = Book.create!(title: "人間失格", isbn: "8888888888888", published_year: 1948, publisher: "筑摩書房", author_ids: [ authors(:two).id ])
+
+    get books_url(tag_id: tag.id)
+
+    assert_response :success
+    assert_match tagged.title, response.body
+    assert_no_match(/#{Regexp.escape(other.title)}/, response.body)
+  end
+
+  test "詳細画面にタグが表示される" do
+    book = books(:one)
+    book.tags << Tag.create!(name: "技術書")
+
+    get book_url(book)
+
+    assert_response :success
+    assert_match "技術書", response.body
+  end
+
   private
 
   def sign_in_as(user)
