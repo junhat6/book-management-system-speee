@@ -1,0 +1,38 @@
+<%# 既存レコードをチェックボックス+チップ表示で複数選択させる共通パーツ。
+    ネイティブの select[multiple] は Ctrl/Cmd+クリックが必要で選択状態も見えづらいため、
+    クリックだけで on/off できるチップに置き換えている。
+    locals: form, method, collection, label_text, filter_placeholder, empty_message %>
+<div class="space-y-2" data-controller="chip-picker">
+  <div class="flex items-center justify-between">
+    <%= form.label method, label_text, class: "label" %>
+    <span class="text-xs text-base-content/60" data-chip-picker-target="count"></span>
+  </div>
+
+  <% if collection.any? %>
+    <%# select[multiple] が自動生成する空値の hidden field と同じ役割。
+        これがないと全チェックを外したときに author_ids パラメータ自体が
+        送信されず、既存の選択が更新されなくなってしまう %>
+    <%= hidden_field_tag "#{form.object_name}[#{method}][]", "", id: nil %>
+
+    <input type="text" placeholder="<%= filter_placeholder %>"
+           class="input input-bordered input-sm w-full"
+           data-chip-picker-target="query" data-action="input->chip-picker#filter">
+
+    <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-3 border border-base-300 rounded-box"
+         data-action="change->chip-picker#updateCount">
+      <% selected_ids = form.object.public_send(method) %>
+      <% collection.each do |item| %>
+        <label class="badge badge-lg badge-outline has-checked:badge-primary has-focus-visible:outline has-focus-visible:outline-2 has-focus-visible:outline-offset-2 cursor-pointer gap-2 py-3"
+               data-chip-picker-target="option" data-name="<%= item.name.downcase %>">
+          <input type="checkbox" name="<%= "#{form.object_name}[#{method}][]" %>" value="<%= item.id %>"
+                 class="sr-only" <%= "checked" if selected_ids.include?(item.id) %>>
+          <%= item.name %>
+        </label>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="alert alert-info">
+      <span><%= empty_message %></span>
+    </div>
+  <% end %>
+</div>
