@@ -16,14 +16,6 @@
         class: "select select-bordered", data: { action: "change->auto-submit#submit" } %>
 <% end %>
 
-<% if @current_tag %>
-  <div class="mb-4 flex items-center gap-2">
-    <span class="text-sm text-base-content/60">タグで絞り込み中:</span>
-    <span class="badge badge-primary"><%= @current_tag.name %></span>
-    <%= link_to "解除", books_path(preserved_list_params(tag_id: nil)), class: "link link-hover text-sm" %>
-  </div>
-<% end %>
-
 <% if @books.any? %>
   <%# md 未満はテーブルを隠してカードに切り替えるため、並び替えの入口をここに置く %>
   <div class="md:hidden mb-3 flex items-center gap-4 text-sm">
