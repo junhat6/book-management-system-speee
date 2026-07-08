@@ -3,6 +3,9 @@
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
+  # db:prepare は DB・テーブルが既に存在すると seed を実行しないため、明示的に呼ぶ。
+  # seeds.rb は find_or_initialize_by / find_or_create_by! で書かれており冪等なので毎回実行しても増殖しない。
+  ./bin/rails db:seed
 fi
 
 exec "${@}"
