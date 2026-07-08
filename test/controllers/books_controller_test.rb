@@ -194,6 +194,45 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/#{Regexp.escape(other.title)}/, response.body)
   end
 
+  test "タグで絞り込んでも該当書籍が持つ他のタグは欠落せず表示される" do
+    sf = Tag.create!(name: "SF")
+    novel = Tag.create!(name: "小説")
+    book = Book.create!(title: "多重タグ本", isbn: "9990000000005", published_year: 2000, publisher: "テスト社", author_ids: [ authors(:one).id ], tag_ids: [ sf.id, novel.id ])
+
+    get books_url(tag_id: novel.id)
+
+    assert_response :success
+    # response.body 全体への assert_match だと検索フォームのタグ選択セレクトの
+    # option 一覧にも一致してしまうため、レコードのタグバッジ（a.badge-primary）に絞って検証する
+    assert_select "a.badge-primary", text: sf.name
+    assert_select "a.badge-primary", text: novel.name
+  end
+
+  test "検索フォームにタグ選択セレクトボックスが表示される" do
+    tag = Tag.create!(name: "技術書")
+
+    get books_url
+
+    assert_select "select[name='tag_id']" do
+      assert_select "option", text: tag.name
+    end
+  end
+
+  test "タグ選択セレクトボックスで絞り込むと選択状態が保持される" do
+    tag = Tag.create!(name: "技術書")
+    tagged = Book.create!(title: "リーダブルコード", isbn: "9990000000001", published_year: 2012, publisher: "オライリー", author_ids: [ authors(:one).id ], tag_ids: [ tag.id ])
+    other = Book.create!(title: "人間失格", isbn: "9990000000002", published_year: 1948, publisher: "筑摩書房", author_ids: [ authors(:two).id ])
+
+    get books_url(tag_id: tag.id)
+
+    assert_response :success
+    assert_match tagged.title, response.body
+    assert_no_match(/#{Regexp.escape(other.title)}/, response.body)
+    assert_select "select[name='tag_id']" do
+      assert_select "option[selected][value='#{tag.id}']", text: tag.name
+    end
+  end
+
   test "詳細画面にタグが表示される" do
     book = books(:one)
     book.tags << Tag.create!(name: "技術書")

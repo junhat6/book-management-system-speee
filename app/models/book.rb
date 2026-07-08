@@ -51,7 +51,11 @@ class Book < ApplicationRecord
   scope :with_tag, ->(tag_id) {
     return all if tag_id.blank?
 
-    joins(:tags).where(tags: { id: tag_id })
+    # joins(:tags).where(tags: { id: tag_id }) だと、Rails が同じ tags 関連への
+    # includes(:tags) と結合して1本の eager load クエリにまとめてしまい、
+    # プリロードされる tags まで tag_id の条件で絞られて他のタグが欠落する。
+    # サブクエリで絞ることで includes(:tags) は独立した preload のままになる
+    where(id: BookTag.where(tag_id: tag_id).select(:book_id))
   }
 
   # params 由来の値を order に直接渡すと SQL インジェクションになるため、

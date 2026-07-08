@@ -3,7 +3,7 @@ class BooksController < ApplicationController
   before_action :require_admin, except: [ :index, :show ]
   before_action :set_book, only: [ :show, :edit, :update, :destroy ]
   before_action :prepare_authors, only: [ :new, :edit, :create, :update ]
-  before_action :prepare_tags, only: [ :new, :edit, :create, :update ]
+  before_action :prepare_tags, only: [ :index, :new, :edit, :create, :update ]
 
   def index
     # 存在しない tag_id は絞り込みなしとして扱う（フィルタ表示も出さない）

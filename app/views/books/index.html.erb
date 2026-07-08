@@ -3,8 +3,7 @@
   <span class="badge badge-neutral"><%= @books.total_count %> 冊</span>
 </div>
 
-<%= form_with url: books_path, method: :get, class: "mb-6" do |form| %>
-  <%= form.hidden_field :tag_id, value: params[:tag_id] %>
+<%= form_with url: books_path, method: :get, class: "mb-6 flex flex-wrap gap-2", data: { controller: "auto-submit" } do |form| %>
   <%= form.hidden_field :sort, value: params[:sort] %>
   <%= form.hidden_field :direction, value: params[:direction] %>
   <div class="join w-full max-w-md">
@@ -12,6 +11,9 @@
           class: "input input-bordered join-item w-full" %>
     <%= form.submit "検索", class: "btn btn-primary join-item" %>
   </div>
+  <%= form.select :tag_id, options_for_select(@tags.map { |tag| [ tag.name, tag.id ] }, params[:tag_id]),
+        { include_blank: "すべてのタグ" },
+        class: "select select-bordered", data: { action: "change->auto-submit#submit" } %>
 <% end %>
 
 <% if @current_tag %>
