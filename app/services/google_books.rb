@@ -31,7 +31,11 @@ class GoogleBooks
 
     def request(isbn)
       uri = URI(API_URL)
-      uri.query = URI.encode_www_form(q: "isbn:#{isbn}")
+      query = { q: "isbn:#{isbn}" }
+      # API キー無しの匿名リクエストは全世界で共有される極小クォータしか無く、すぐ 429 になる。
+      # キーがあればプロジェクト固有のクォータで問い合わせられるため、設定されている場合のみ付与する。
+      query[:key] = ENV["GOOGLE_BOOKS_API_KEY"] if ENV["GOOGLE_BOOKS_API_KEY"].present?
+      uri.query = URI.encode_www_form(query)
 
       response = Net::HTTP.start(uri.host, uri.port, use_ssl: true,
                                  open_timeout: TIMEOUT_SECONDS, read_timeout: TIMEOUT_SECONDS) do |http|

@@ -10,6 +10,15 @@ class GoogleBooksTest < ActiveSupport::TestCase
                  headers: { "Content-Type" => "application/json" })
   end
 
+  # 本番の匿名クォータ枯渇（HTTP 429）を避けるため API キーを付与する仕様のテスト用に ENV を一時的に切り替える
+  def with_google_books_api_key(key)
+    original = ENV["GOOGLE_BOOKS_API_KEY"]
+    ENV["GOOGLE_BOOKS_API_KEY"] = key
+    yield
+  ensure
+    ENV["GOOGLE_BOOKS_API_KEY"] = original
+  end
+
   def full_response_body
     {
       totalItems: 1,
@@ -70,6 +79,28 @@ class GoogleBooksTest < ActiveSupport::TestCase
     stub_google_books(isbn: "9999999999999", body: { totalItems: 0 })
 
     assert_nil GoogleBooks.lookup("9999999999999")
+  end
+
+  test "GOOGLE_BOOKS_API_KEY が設定されていればリクエストに key パラメータを付与する" do
+    with_google_books_api_key("test-api-key") do
+      stub = stub_request(:get, API_URL)
+        .with(query: { q: "isbn:9784873115658", key: "test-api-key" })
+        .to_return(status: 200, body: full_response_body.to_json, headers: { "Content-Type" => "application/json" })
+
+      GoogleBooks.lookup("9784873115658")
+
+      assert_requested stub
+    end
+  end
+
+  test "GOOGLE_BOOKS_API_KEY が未設定なら key パラメータを付与しない" do
+    with_google_books_api_key(nil) do
+      stub = stub_google_books(isbn: "9784873115658", body: full_response_body)
+
+      GoogleBooks.lookup("9784873115658")
+
+      assert_requested stub
+    end
   end
 
   test "空の ISBN は API に問い合わせず nil を返す" do
