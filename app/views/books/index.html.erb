@@ -64,27 +64,29 @@
   <%# md 以上: 従来のテーブル表示 %>
   <div class="card bg-base-100 shadow-sm hidden md:block">
     <div class="overflow-x-auto">
-      <table class="table">
+      <table class="table table-fixed min-w-[1040px]">
         <thead>
           <tr>
-            <th><%= sort_link "title", "タイトル" %></th>
-            <th>著者</th>
-            <th>タグ</th>
-            <th>ISBN</th>
-            <th><%= sort_link "published_year", "出版年" %></th>
-            <th>出版社</th>
-            <th>在庫</th>
-            <th class="text-right">操作</th>
+            <th class="w-[22%]"><%= sort_link "title", "タイトル" %></th>
+            <th class="w-[13%]">著者</th>
+            <th class="w-[13%]">タグ</th>
+            <th class="w-[12%]">ISBN</th>
+            <th class="w-[8%]"><%= sort_link "published_year", "出版年" %></th>
+            <th class="w-[10%]">出版社</th>
+            <th class="w-[6%]">在庫</th>
+            <th class="w-[16%] text-right">操作</th>
           </tr>
         </thead>
         <tbody>
           <% @books.each do |book| %>
             <tr class="hover">
-              <td class="font-medium">
+              <td class="font-medium align-top truncate" title="<%= book.title %>">
                 <%= link_to book.title, book_path(book), class: "link link-hover" %>
               </td>
-              <td><%= book.authors.map(&:name).join("、") %></td>
-              <td>
+              <td class="align-top truncate" title="<%= book.authors.map(&:name).join("、") %>">
+                <%= book.authors.map(&:name).join("、") %>
+              </td>
+              <td class="align-top">
                 <div class="flex flex-wrap gap-1">
                   <% book.tags.each do |tag| %>
                     <%= link_to tag.name, books_path(preserved_list_params(tag_id: tag.id)),
@@ -92,11 +94,11 @@
                   <% end %>
                 </div>
               </td>
-              <td><%= book.isbn %></td>
-              <td><%= book.published_year %></td>
-              <td><%= book.publisher %></td>
-              <td><%= render "stock_badge", book: book %></td>
-              <td class="text-right">
+              <td class="align-top whitespace-nowrap"><%= book.isbn %></td>
+              <td class="align-top"><%= book.published_year %></td>
+              <td class="align-top truncate" title="<%= book.publisher %>"><%= book.publisher %></td>
+              <td class="align-top"><%= render "stock_badge", book: book %></td>
+              <td class="align-top text-right">
                 <div class="flex justify-end gap-1">
                   <%= render "actions", book: book %>
                 </div>

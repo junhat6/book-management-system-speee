@@ -16,10 +16,12 @@ module BooksHelper
     # 不正な direction はモデル側で昇順として扱うため、表示・トグルも昇順起点に揃える
     current_direction = params[:direction] == "desc" ? "desc" : "asc"
     next_direction = active && current_direction == "asc" ? "desc" : "asc"
-    arrow = active ? (current_direction == "asc" ? " ▲" : " ▼") : ""
+    arrow = active ? (current_direction == "asc" ? "▲" : "▼") : ""
 
-    link_to "#{label}#{arrow}",
-            books_path(preserved_list_params(sort: column, direction: next_direction)),
-            class: "link link-hover"
+    link_to books_path(preserved_list_params(sort: column, direction: next_direction)),
+            class: "link link-hover" do
+      # 矢印の有無でリンクの見た目上の右端がガタつかないよう、非表示時も幅を確保する
+      safe_join([ label, content_tag(:span, arrow, class: "inline-block w-3 text-xs") ])
+    end
   end
 end
