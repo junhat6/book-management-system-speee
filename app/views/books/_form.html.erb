@@ -32,36 +32,18 @@
     <%= form.text_field :publisher, class: "input input-bordered w-full" %>
   </div>
 
-  <div class="space-y-2">
-    <%= form.label :author_ids, "著者（既存）", class: "label" %>
-    <% if @authors.any? %>
-      <%= form.collection_select :author_ids, @authors, :id, :name, {},
-            { multiple: true, class: "select select-bordered w-full min-h-32" } %>
-      <p class="text-sm text-base-content/60">複数選択できます。既存著者がない場合は下の入力欄から追加してください。</p>
-    <% else %>
-      <div class="alert alert-info">
-        <span>既存著者がまだありません。下の入力欄から新しい著者を追加できます。</span>
-      </div>
-    <% end %>
-  </div>
+  <%= render "checkbox_chip_field", form: form, method: :author_ids, collection: @authors,
+        label_text: "著者（既存）", filter_placeholder: "著者名で絞り込み",
+        empty_message: "既存著者がまだありません。下の入力欄から新しい著者を追加できます。" %>
 
   <div>
     <%= form.label :new_author_names, "新しい著者を追加", class: "label" %>
     <%= form.text_field :new_author_names, class: "input input-bordered w-full", placeholder: "例: 夏目漱石、太宰治（「、」区切りで複数追加）" %>
   </div>
 
-  <div class="space-y-2">
-    <%= form.label :tag_ids, "タグ・ジャンル（既存）", class: "label" %>
-    <% if @tags.any? %>
-      <%= form.collection_select :tag_ids, @tags, :id, :name, {},
-            { multiple: true, class: "select select-bordered w-full min-h-32" } %>
-      <p class="text-sm text-base-content/60">複数選択できます。既存タグがない場合は下の入力欄から追加してください。</p>
-    <% else %>
-      <div class="alert alert-info">
-        <span>既存タグがまだありません。下の入力欄から新しいタグを追加できます。</span>
-      </div>
-    <% end %>
-  </div>
+  <%= render "checkbox_chip_field", form: form, method: :tag_ids, collection: @tags,
+        label_text: "タグ・ジャンル（既存）", filter_placeholder: "タグ名で絞り込み",
+        empty_message: "既存タグがまだありません。下の入力欄から新しいタグを追加できます。" %>
 
   <div>
     <%= form.label :new_tag_names, "新しいタグを追加", class: "label" %>
