@@ -28,7 +28,11 @@ class GoogleBooksTest < ActiveSupport::TestCase
             title: "リーダブルコード",
             authors: [ "Dustin Boswell", "Trevor Foucher" ],
             publisher: "オライリージャパン",
-            publishedDate: "2012-06"
+            publishedDate: "2012-06",
+            imageLinks: {
+              smallThumbnail: "http://books.google.com/books/content?id=abc&img=1&zoom=5",
+              thumbnail: "http://books.google.com/books/content?id=abc&img=1&zoom=1"
+            }
           }
         }
       ]
@@ -44,6 +48,34 @@ class GoogleBooksTest < ActiveSupport::TestCase
     assert_equal [ "Dustin Boswell", "Trevor Foucher" ], volume.authors
     assert_equal "オライリージャパン", volume.publisher
     assert_equal 2012, volume.published_year
+  end
+
+  test "imageLinks.thumbnail があれば https に強制した image_url を返す" do
+    stub_google_books(isbn: "9784873115658", body: full_response_body)
+
+    volume = GoogleBooks.lookup("9784873115658")
+
+    assert_equal "https://books.google.com/books/content?id=abc&img=1&zoom=1", volume.image_url
+  end
+
+  test "thumbnail が無く smallThumbnail のみの場合はそちらを image_url として使う" do
+    body = full_response_body
+    body[:items][0][:volumeInfo][:imageLinks] = {
+      smallThumbnail: "http://books.google.com/books/content?id=abc&img=1&zoom=5"
+    }
+    stub_google_books(isbn: "9784873115658", body: body)
+
+    volume = GoogleBooks.lookup("9784873115658")
+
+    assert_equal "https://books.google.com/books/content?id=abc&img=1&zoom=5", volume.image_url
+  end
+
+  test "imageLinks が無ければ image_url は nil" do
+    body = full_response_body
+    body[:items][0][:volumeInfo].delete(:imageLinks)
+    stub_google_books(isbn: "9784873115658", body: body)
+
+    assert_nil GoogleBooks.lookup("9784873115658").image_url
   end
 
   test "ハイフンや空白付きの ISBN は正規化して問い合わせる" do
@@ -73,6 +105,7 @@ class GoogleBooksTest < ActiveSupport::TestCase
     assert_equal [], volume.authors
     assert_nil volume.publisher
     assert_nil volume.published_year
+    assert_nil volume.image_url
   end
 
   test "ヒットしない ISBN は nil を返す" do

@@ -4,12 +4,12 @@ require "net/http"
 # https://developers.google.com/books/docs/v1/using
 #
 # 戻り値の使い分け：
-#   - ヒット       → Volume（title / authors / publisher / published_year）
+#   - ヒット       → Volume（title / authors / publisher / published_year / image_url）
 #   - ヒットなし   → nil（正常系。呼び出し側は手入力を促す）
 #   - 通信・API異常 → GoogleBooks::Error（異常系。呼び出し側で rescue する）
 class GoogleBooks
   Error = Class.new(StandardError)
-  Volume = Data.define(:title, :authors, :publisher, :published_year)
+  Volume = Data.define(:title, :authors, :publisher, :published_year, :image_url)
 
   API_URL = "https://www.googleapis.com/books/v1/volumes".freeze
   TIMEOUT_SECONDS = 5
@@ -59,8 +59,17 @@ class GoogleBooks
         authors: Array(info["authors"]),
         publisher: info["publisher"],
         # "2012-06" や "1914" のような形式差があるため、先頭の4桁だけを年として使う
-        published_year: info["publishedDate"]&.slice(/\d{4}/)&.to_i
+        published_year: info["publishedDate"]&.slice(/\d{4}/)&.to_i,
+        image_url: extract_image_url(info["imageLinks"])
       )
+    end
+
+    # Google Books API はサムネイルURLを http のまま返すことが多いため、https に強制する
+    def extract_image_url(image_links)
+      return nil if image_links.blank?
+
+      url = image_links["thumbnail"] || image_links["smallThumbnail"]
+      url&.sub(/\Ahttp:/, "https:")
     end
   end
 end

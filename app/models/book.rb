@@ -21,8 +21,10 @@ class Book < ApplicationRecord
   has_many :tags, through: :book_tags
   has_many :copies, class_name: "BookCopy", dependent: :destroy
   has_many :rentals, through: :copies
+  has_one_attached :cover_image
 
   attr_reader :new_author_names, :new_tag_names, :initial_stock_count
+  attr_accessor :remote_cover_image_url
 
   validates :title, presence: true
   validates :isbn, presence: true, uniqueness: true
@@ -38,6 +40,12 @@ class Book < ApplicationRecord
   # 履歴チェックの前にコピー削除が始まってしまう
   before_destroy :must_not_have_rental_history, prepend: true
   after_create :create_initial_copies
+  # DBトランザクションの外で行うため before_save ではなく after_commit にする。
+  # SQLite は単一ファイルへの書き込みロックを取るため、トランザクション内でネットワークI/O
+  # （最大5秒）を挟むと books/book_copies/rentals への他の書き込みが待たされてしまう。
+  # remote_cover_image_url が空なら即returnするだけなので、バリデーション失敗時や
+  # 画像なしでの通常保存では何も起きない
+  after_commit :attach_cover_image_from_remote_url
 
   scope :search, ->(query) {
     return all if query.blank?
@@ -137,5 +145,23 @@ class Book < ApplicationRecord
       tag = Tag.find_or_create_by!(name: name)
       tags << tag unless tags.exists?(tag.id)
     end
+  end
+
+  # 書影の取得失敗は登録・更新自体を妨げない（GoogleBooks と同じ「失敗は黙って諦める」方針）。
+  # 管理者からは「プレビューで見えた画像が保存後に消えている」ように見えうるが、
+  # 書影は付随情報であり本の登録を止めてまで守るべき情報ではないため許容する
+  def attach_cover_image_from_remote_url
+    url = remote_cover_image_url
+    return if url.blank?
+
+    # cover_image.attach は ActiveStorage::Attachment（belongs_to :record, touch: true）経由で
+    # このレコードを touch する。touch のコミットで after_commit が再度発火してしまうため、
+    # 呼び出し前に属性を空にして二度目の発火を早期returnさせないと無限再帰する
+    self.remote_cover_image_url = nil
+
+    fetched = RemoteImage.fetch(url)
+    cover_image.attach(io: fetched.io, filename: fetched.filename, content_type: fetched.content_type)
+  rescue RemoteImage::Error => e
+    Rails.logger.warn("Cover image fetch failed: #{e.message}")
   end
 end

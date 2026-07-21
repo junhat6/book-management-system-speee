@@ -1,6 +1,10 @@
 <div class="max-w-2xl mx-auto">
   <div class="card bg-base-100 shadow-sm">
     <div class="card-body">
+      <% if @book.cover_image.attached? %>
+        <%= image_tag @book.cover_image, class: "w-32 h-44 object-cover rounded shadow mb-4" %>
+      <% end %>
+
       <h1 class="card-title text-2xl mb-4"><%= @book.title %></h1>
 
       <dl class="grid grid-cols-3 gap-y-3 text-sm">
