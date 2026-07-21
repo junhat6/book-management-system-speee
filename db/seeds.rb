@@ -1,3 +1,15 @@
+# db/seed_images/<ISBN>.jpg があれば書影として添付する（`bin/rails db:seed_images` で事前取得したもの）。
+# seeds.rb は本番デプロイ時にも実行されるため、ここではネットワークに一切アクセスしない
+# （Google Books API を都度叩くと、レート制限やAPI障害がデプロイに影響してしまう）
+def attach_seed_cover_image(book)
+  return if book.cover_image.attached?
+
+  path = Rails.root.join("db/seed_images/#{book.isbn}.jpg")
+  return unless File.exist?(path)
+
+  book.cover_image.attach(io: File.open(path), filename: "#{book.isbn}.jpg", content_type: "image/jpeg")
+end
+
 admin_user = User.find_or_initialize_by(email_address: "admin@example.com")
 admin_user.assign_attributes(
   name: "管理者",
@@ -50,6 +62,7 @@ gatsby.assign_attributes(
   new_author_names: fitzgerald.name
 )
 gatsby.save!
+attach_seed_cover_image(gatsby)
 
 mockingbird = Book.find_or_initialize_by(isbn: "978-0-06-112008-4")
 mockingbird.assign_attributes(
@@ -59,6 +72,7 @@ mockingbird.assign_attributes(
   new_author_names: lee.name
 )
 mockingbird.save!
+attach_seed_cover_image(mockingbird)
 
 # --- 実在書籍データ ---
 # 実際に出版されている書籍の書誌情報（ISBN・出版社・出版年）を用いる。
@@ -127,6 +141,7 @@ production_books = PRODUCTION_BOOKS.map do |data|
     new_tag_names: data[:tags].join("、")
   )
   book.save!
+  attach_seed_cover_image(book)
 
   # 新規作成時に1冊だけ自動で作られるので、指定冊数との差分だけ追加する
   # （既に投入済みなら差分は0になり、再実行しても増殖しない）
