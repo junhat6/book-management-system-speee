@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: book_copies
+# Table name: book_items
 #
 #  id         :integer          not null, primary key
 #  created_at :datetime         not null
@@ -9,19 +9,19 @@
 #
 # Indexes
 #
-#  index_book_copies_on_book_id  (book_id)
+#  index_book_items_on_book_id  (book_id)
 #
 # Foreign Keys
 #
 #  book_id  (book_id => books.id)
 #
-class BookCopy < ApplicationRecord
+class BookItem < ApplicationRecord
   belongs_to :book
   has_many :rentals
 
-  scope :available, -> { where.not(id: Rental.active.select(:book_copy_id)) }
+  scope :available, -> { where.not(id: Rental.active.select(:book_item_id)) }
 
-  # 貸出履歴は「誰が何を借りたか」の記録なので、コピーを消して履歴を失わないよう削除を止める
+  # 貸出履歴は「誰が何を借りたか」の記録なので、現物を消して履歴を失わないよう削除を止める
   before_destroy :must_not_have_rental_history
 
   # rentals を preload しておけば追加クエリなしで判定できる

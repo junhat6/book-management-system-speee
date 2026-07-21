@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
   resources :books, only: [ :index, :show, :new, :create, :edit, :update, :destroy ] do
     resources :rentals, only: [ :create ]
-    resources :copies, controller: "book_copies", only: [ :create, :destroy ]
+    resources :items, controller: "book_items", only: [ :create, :destroy ]
   end
   resources :rentals, only: [ :index, :update ]
   get "signup", to: "users#new"

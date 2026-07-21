@@ -58,7 +58,7 @@ class RentalsControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:two), book.reload.active_rental_for(users(:two)).user
   end
 
-  test "ログイン済みなら空いているコピーが自動で割り当てられて借りられる" do
+  test "ログイン済みなら空いている現物が自動で割り当てられて借りられる" do
     sign_in_as users(:one)
     book = books(:one)
     assert_difference("Rental.count", 1) do
@@ -70,17 +70,17 @@ class RentalsControllerTest < ActionDispatch::IntegrationTest
 
   test "他のユーザーが貸出中でも在庫が残っていれば借りられる" do
     sign_in_as users(:one)
-    book = books(:two) # コピーAは users(:two) が貸出中、コピーBが空き
+    book = books(:two) # 現物Aは users(:two) が貸出中、現物Bが空き
     assert_difference("Rental.count", 1) do
       post book_rentals_url(book)
     end
     assert_redirected_to book_url(book)
-    assert_equal book_copies(:two_copy_b), book.reload.active_rental_for(users(:one)).book_copy
+    assert_equal book_items(:two_item_b), book.reload.active_rental_for(users(:one)).book_item
   end
 
-  test "全コピーが貸出中の本は借りられない" do
+  test "全現物が貸出中の本は借りられない" do
     third = User.create!(name: "三人目", email_address: "third@example.com", password: "password123")
-    Rental.create!(user: third, book_copy: book_copies(:two_copy_b))
+    Rental.create!(user: third, book_item: book_items(:two_item_b))
 
     sign_in_as users(:one)
     assert_no_difference("Rental.count") do
@@ -89,8 +89,8 @@ class RentalsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to book_url(books(:two))
   end
 
-  test "すでに同じ本を借りているユーザーは別のコピーを借りられない" do
-    sign_in_as users(:two) # books(:two) のコピーAを貸出中
+  test "すでに同じ本を借りているユーザーは別の現物を借りられない" do
+    sign_in_as users(:two) # books(:two) の現物Aを貸出中
     assert_no_difference("Rental.count") do
       post book_rentals_url(books(:two))
     end

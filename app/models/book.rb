@@ -19,8 +19,8 @@ class Book < ApplicationRecord
   has_many :authors, through: :book_authors
   has_many :book_tags, dependent: :destroy
   has_many :tags, through: :book_tags
-  has_many :copies, class_name: "BookCopy", dependent: :destroy
-  has_many :rentals, through: :copies
+  has_many :items, class_name: "BookItem", dependent: :destroy
+  has_many :rentals, through: :items
   has_one_attached :cover_image
 
   attr_reader :new_author_names, :new_tag_names, :initial_stock_count
@@ -36,13 +36,13 @@ class Book < ApplicationRecord
 
   before_save :attach_new_authors
   before_save :attach_new_tags
-  # prepend しないと copies の dependent: :destroy が先に走り、
-  # 履歴チェックの前にコピー削除が始まってしまう
+  # prepend しないと items の dependent: :destroy が先に走り、
+  # 履歴チェックの前に現物削除が始まってしまう
   before_destroy :must_not_have_rental_history, prepend: true
-  after_create :create_initial_copies
+  after_create :create_initial_items
   # DBトランザクションの外で行うため before_save ではなく after_commit にする。
   # SQLite は単一ファイルへの書き込みロックを取るため、トランザクション内でネットワークI/O
-  # （最大5秒）を挟むと books/book_copies/rentals への他の書き込みが待たされてしまう。
+  # （最大5秒）を挟むと books/book_items/rentals への他の書き込みが待たされてしまう。
   # remote_cover_image_url が空なら即returnするだけなので、バリデーション失敗時や
   # 画像なしでの通常保存では何も起きない
   after_commit :attach_cover_image_from_remote_url
@@ -93,16 +93,16 @@ class Book < ApplicationRecord
   end
 
   def stock_count
-    copies.size
+    items.size
   end
 
-  # copies: :rentals を preload しておけば追加クエリなしで数えられる
+  # items: :rentals を preload しておけば追加クエリなしで数えられる
   def available_stock_count
-    copies.count { |copy| copy.available? }
+    items.count { |item| item.available? }
   end
 
-  def available_copy
-    copies.available.first
+  def available_item
+    items.available.first
   end
 
   def active_rental_for(user)
@@ -119,8 +119,8 @@ class Book < ApplicationRecord
     errors.add(:authors, "を1人以上指定してください")
   end
 
-  def create_initial_copies
-    (initial_stock_count || 1).times { copies.create! }
+  def create_initial_items
+    (initial_stock_count || 1).times { items.create! }
   end
 
   def must_not_have_rental_history

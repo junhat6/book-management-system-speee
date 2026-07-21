@@ -2,7 +2,7 @@
 
 # == Schema Information
 #
-# Table name: book_copies
+# Table name: book_items
 #
 #  id         :integer          not null, primary key
 #  created_at :datetime         not null
@@ -11,17 +11,17 @@
 #
 # Indexes
 #
-#  index_book_copies_on_book_id  (book_id)
+#  index_book_items_on_book_id  (book_id)
 #
 # Foreign Keys
 #
 #  book_id  (book_id => books.id)
 #
-one_copy_a: # books(:one) の1冊目（貸出なし）
+one_item_a: # books(:one) の1冊目（貸出なし）
   book: one
 
-two_copy_a: # books(:two) の1冊目（users(:two) が貸出中）
+two_item_a: # books(:two) の1冊目（users(:two) が貸出中）
   book: two
 
-two_copy_b: # books(:two) の2冊目（貸出なし）
+two_item_b: # books(:two) の2冊目（貸出なし）
   book: two

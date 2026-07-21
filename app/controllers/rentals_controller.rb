@@ -1,5 +1,5 @@
 class RentalsController < ApplicationController
-  rescue_from ActiveRecord::RecordNotUnique, with: :copy_just_rented
+  rescue_from ActiveRecord::RecordNotUnique, with: :item_just_rented
 
   before_action :set_book, only: :create
   before_action :set_own_active_rental, only: :update
@@ -12,12 +12,12 @@ class RentalsController < ApplicationController
   end
 
   def create
-    copy = @book.available_copy
-    if copy.nil?
+    item = @book.available_item
+    if item.nil?
       return redirect_to @book, alert: "在庫がないため借りられません。"
     end
 
-    @rental = Rental.new(user: Current.user, book_copy: copy)
+    @rental = Rental.new(user: Current.user, book_item: item)
     if @rental.save
       redirect_to @book, notice: "「#{@book.title}」を借りました。"
     else
@@ -44,7 +44,7 @@ class RentalsController < ApplicationController
     @rental = Current.user.rentals.active.find(params[:id])
   end
 
-  def copy_just_rented
+  def item_just_rented
     redirect_to @book, alert: "ちょうど最後の在庫が貸し出されたため借りられませんでした。"
   end
 end

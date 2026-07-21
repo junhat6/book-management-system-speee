@@ -6,24 +6,24 @@
 #  returned_at  :datetime
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
-#  book_copy_id :integer          not null
+#  book_item_id :integer          not null
 #  user_id      :integer          not null
 #
 # Indexes
 #
-#  index_rentals_on_book_copy_id              (book_copy_id)
-#  index_rentals_on_book_copy_id_when_active  (book_copy_id) UNIQUE WHERE returned_at IS NULL
+#  index_rentals_on_book_item_id              (book_item_id)
+#  index_rentals_on_book_item_id_when_active  (book_item_id) UNIQUE WHERE returned_at IS NULL
 #  index_rentals_on_user_id                   (user_id)
 #
 # Foreign Keys
 #
-#  book_copy_id  (book_copy_id => book_copies.id)
+#  book_item_id  (book_item_id => book_items.id)
 #  user_id       (user_id => users.id)
 #
 class Rental < ApplicationRecord
   belongs_to :user
-  belongs_to :book_copy
-  has_one :book, through: :book_copy
+  belongs_to :book_item
+  has_one :book, through: :book_item
 
   scope :active, -> { where(returned_at: nil) }
 
@@ -51,7 +51,7 @@ class Rental < ApplicationRecord
     end
   }
 
-  validate :copy_must_be_available, on: :create
+  validate :item_must_be_available, on: :create
   validate :must_not_rent_same_book_twice, on: :create
 
   def active?
@@ -60,16 +60,16 @@ class Rental < ApplicationRecord
 
   private
 
-  def copy_must_be_available
-    return if book_copy.blank?
-    return unless Rental.active.exists?(book_copy_id: book_copy_id)
+  def item_must_be_available
+    return if book_item.blank?
+    return unless Rental.active.exists?(book_item_id: book_item_id)
 
-    errors.add(:book_copy, "は貸出中のため借りられません")
+    errors.add(:book_item, "は貸出中のため借りられません")
   end
 
   def must_not_rent_same_book_twice
-    return if user.blank? || book_copy.blank?
-    return unless user.rentals.active.joins(:book_copy).exists?(book_copies: { book_id: book_copy.book_id })
+    return if user.blank? || book_item.blank?
+    return unless user.rentals.active.joins(:book_item).exists?(book_items: { book_id: book_item.book_id })
 
     errors.add(:base, "すでにこの本を借りています")
   end

@@ -146,7 +146,7 @@ production_books = PRODUCTION_BOOKS.map do |data|
   # 新規作成時に1冊だけ自動で作られるので、指定冊数との差分だけ追加する
   # （既に投入済みなら差分は0になり、再実行しても増殖しない）
   desired_stock = data[:stock] || 1
-  (desired_stock - book.copies.count).times { book.copies.create! }
+  (desired_stock - book.items.count).times { book.items.create! }
 
   book
 end
@@ -157,11 +157,11 @@ books_by_isbn = production_books.index_by(&:isbn)
 # created_at を数十日前にしたまま returned_at を nil にすることで
 # 「借りたまま長期間経っている（延滞）」状態を表現する。
 if Rental.none?
-  rent = lambda do |user:, isbn:, copy_index:, created_at:, returned_after: nil|
-    copy = books_by_isbn.fetch(isbn).copies.order(:id)[copy_index]
+  rent = lambda do |user:, isbn:, item_index:, created_at:, returned_after: nil|
+    item = books_by_isbn.fetch(isbn).items.order(:id)[item_index]
     Rental.create!(
       user: user,
-      book_copy: copy,
+      book_item: item,
       created_at: created_at,
       returned_at: returned_after ? created_at + returned_after : nil
     )
@@ -170,24 +170,24 @@ if Rental.none?
   general, tanaka, sato, suzuki, takahashi, ito = [ general_user, *readers ]
 
   # 返却済み（貸出履歴）
-  rent.call(user: general,    isbn: "978-4-10-101013-7", copy_index: 0, created_at: 2.months.ago,  returned_after: 10.days) # こころ
-  rent.call(user: general,    isbn: "978-4-10-100605-5", copy_index: 0, created_at: 3.months.ago,  returned_after: 6.days)  # 人間失格
-  rent.call(user: sato,       isbn: "978-4-16-711012-3", copy_index: 0, created_at: 2.months.ago,  returned_after: 14.days) # 容疑者Xの献身
-  rent.call(user: suzuki,     isbn: "978-4-10-101003-8", copy_index: 0, created_at: 4.months.ago,  returned_after: 7.days)  # 坊っちゃん
-  rent.call(user: takahashi,  isbn: "978-4-10-136918-1", copy_index: 0, created_at: 1.month.ago,   returned_after: 5.days)  # 火車
-  rent.call(user: ito,        isbn: "978-4-478-02581-9", copy_index: 0, created_at: 5.months.ago,  returned_after: 12.days) # 嫌われる勇気
-  rent.call(user: sato,       isbn: "978-4-10-101004-5", copy_index: 0, created_at: 6.months.ago,  returned_after: 8.days)  # 三四郎
-  rent.call(user: suzuki,     isbn: "978-4-10-100244-6", copy_index: 0, created_at: 2.months.ago,  returned_after: 9.days)  # 雪国
+  rent.call(user: general,    isbn: "978-4-10-101013-7", item_index: 0, created_at: 2.months.ago,  returned_after: 10.days) # こころ
+  rent.call(user: general,    isbn: "978-4-10-100605-5", item_index: 0, created_at: 3.months.ago,  returned_after: 6.days)  # 人間失格
+  rent.call(user: sato,       isbn: "978-4-16-711012-3", item_index: 0, created_at: 2.months.ago,  returned_after: 14.days) # 容疑者Xの献身
+  rent.call(user: suzuki,     isbn: "978-4-10-101003-8", item_index: 0, created_at: 4.months.ago,  returned_after: 7.days)  # 坊っちゃん
+  rent.call(user: takahashi,  isbn: "978-4-10-136918-1", item_index: 0, created_at: 1.month.ago,   returned_after: 5.days)  # 火車
+  rent.call(user: ito,        isbn: "978-4-478-02581-9", item_index: 0, created_at: 5.months.ago,  returned_after: 12.days) # 嫌われる勇気
+  rent.call(user: sato,       isbn: "978-4-10-101004-5", item_index: 0, created_at: 6.months.ago,  returned_after: 8.days)  # 三四郎
+  rent.call(user: suzuki,     isbn: "978-4-10-100244-6", item_index: 0, created_at: 2.months.ago,  returned_after: 9.days)  # 雪国
 
   # 貸出中（借りて間もない、通常の貸出状態）
-  rent.call(user: general,    isbn: "978-4-87311-565-8", copy_index: 0, created_at: 1.week.ago)  # リーダブルコード
-  rent.call(user: tanaka,     isbn: "978-4-10-101013-7", copy_index: 1, created_at: 3.days.ago)   # こころ（2冊目）
-  rent.call(user: suzuki,     isbn: "978-4-10-100605-5", copy_index: 1, created_at: 5.days.ago)   # 人間失格（2冊目）
-  rent.call(user: ito,        isbn: "978-4-10-136918-1", copy_index: 1, created_at: 2.days.ago)   # 火車（2冊目）
-  rent.call(user: ito,        isbn: "978-4-274-21788-3", copy_index: 0, created_at: 1.day.ago)    # テスト駆動開発
+  rent.call(user: general,    isbn: "978-4-87311-565-8", item_index: 0, created_at: 1.week.ago)  # リーダブルコード
+  rent.call(user: tanaka,     isbn: "978-4-10-101013-7", item_index: 1, created_at: 3.days.ago)   # こころ（2冊目）
+  rent.call(user: suzuki,     isbn: "978-4-10-100605-5", item_index: 1, created_at: 5.days.ago)   # 人間失格（2冊目）
+  rent.call(user: ito,        isbn: "978-4-10-136918-1", item_index: 1, created_at: 2.days.ago)   # 火車（2冊目）
+  rent.call(user: ito,        isbn: "978-4-274-21788-3", item_index: 0, created_at: 1.day.ago)    # テスト駆動開発
 
   # 貸出中（延滞デモ：長期間 returned_at が付かないまま借りっぱなし）
-  rent.call(user: sato,       isbn: "978-4-10-101013-7", copy_index: 2, created_at: 40.days.ago)  # こころ（3冊目）
-  rent.call(user: takahashi,  isbn: "978-4-16-711012-3", copy_index: 1, created_at: 45.days.ago)  # 容疑者Xの献身（2冊目）
-  rent.call(user: tanaka,     isbn: "978-4-478-02581-9", copy_index: 1, created_at: 30.days.ago)  # 嫌われる勇気（2冊目）
+  rent.call(user: sato,       isbn: "978-4-10-101013-7", item_index: 2, created_at: 40.days.ago)  # こころ（3冊目）
+  rent.call(user: takahashi,  isbn: "978-4-16-711012-3", item_index: 1, created_at: 45.days.ago)  # 容疑者Xの献身（2冊目）
+  rent.call(user: tanaka,     isbn: "978-4-478-02581-9", item_index: 1, created_at: 30.days.ago)  # 嫌われる勇気（2冊目）
 end

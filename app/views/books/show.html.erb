@@ -55,7 +55,7 @@
       <% if admin? %>
         <div class="mt-6">
           <h2 class="font-bold mb-2">在庫管理</h2>
-          <% if @book.copies.any? %>
+          <% if @book.items.any? %>
             <table class="table table-sm">
               <thead>
                 <tr>
@@ -65,20 +65,20 @@
                 </tr>
               </thead>
               <tbody>
-                <% @book.copies.each do |copy| %>
+                <% @book.items.each do |item| %>
                   <tr>
-                    <td>#<%= copy.id %></td>
+                    <td>#<%= item.id %></td>
                     <td>
-                      <% if copy.available? %>
+                      <% if item.available? %>
                         <span class="badge badge-success">貸出可</span>
                       <% else %>
                         <span class="badge badge-error">貸出中</span>
                       <% end %>
                     </td>
                     <td class="text-right">
-                      <%= button_to "削除", book_copy_path(@book, copy), method: :delete,
+                      <%= button_to "削除", book_item_path(@book, item), method: :delete,
                             class: "btn btn-xs btn-error btn-outline",
-                            form: { data: { turbo_confirm: "「#{@book.title}」の在庫 ##{copy.id} を削除します。よろしいですか？" } } %>
+                            form: { data: { turbo_confirm: "「#{@book.title}」の在庫 ##{item.id} を削除します。よろしいですか？" } } %>
                     </td>
                   </tr>
                 <% end %>
@@ -87,7 +87,7 @@
           <% else %>
             <p class="text-sm text-base-content/60">在庫がありません。</p>
           <% end %>
-          <%= button_to "在庫を1冊追加", book_copies_path(@book), class: "btn btn-sm btn-outline mt-2" %>
+          <%= button_to "在庫を1冊追加", book_items_path(@book), class: "btn btn-sm btn-outline mt-2" %>
         </div>
       <% end %>
 

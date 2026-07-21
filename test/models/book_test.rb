@@ -132,7 +132,7 @@ class BookTest < ActiveSupport::TestCase
     assert_equal 2, book.reload.authors.count
   end
 
-  test "stock_count は登録済みコピーの冊数を返す" do
+  test "stock_count は登録済み現物の冊数を返す" do
     assert_equal 1, books(:one).stock_count
     assert_equal 2, books(:two).stock_count
   end
@@ -142,14 +142,14 @@ class BookTest < ActiveSupport::TestCase
     assert_equal 1, books(:two).available_stock_count
   end
 
-  test "available_copy は空いているコピーを返す" do
-    assert_equal book_copies(:two_copy_b), books(:two).available_copy
+  test "available_item は空いている現物を返す" do
+    assert_equal book_items(:two_item_b), books(:two).available_item
   end
 
-  test "全コピーが貸出中なら available_copy は nil" do
-    Rental.create!(user: users(:one), book_copy: book_copies(:two_copy_b))
+  test "全現物が貸出中なら available_item は nil" do
+    Rental.create!(user: users(:one), book_item: book_items(:two_item_b))
 
-    assert_nil books(:two).reload.available_copy
+    assert_nil books(:two).reload.available_item
   end
 
   test "active_rental_for は自分のアクティブな貸出を返す" do
@@ -157,14 +157,14 @@ class BookTest < ActiveSupport::TestCase
     assert_nil books(:two).active_rental_for(users(:one))
   end
 
-  test "initial_stock_count を指定して登録するとその冊数のコピーが作られる" do
+  test "initial_stock_count を指定して登録するとその冊数の現物が作られる" do
     @book.initial_stock_count = 3
 
-    assert_difference("BookCopy.count", 3) { @book.save! }
+    assert_difference("BookItem.count", 3) { @book.save! }
   end
 
-  test "initial_stock_count 未指定なら1冊のコピーが作られる" do
-    assert_difference("BookCopy.count", 1) { @book.save! }
+  test "initial_stock_count 未指定なら1冊の現物が作られる" do
+    assert_difference("BookItem.count", 1) { @book.save! }
   end
 
   test "initial_stock_count が0以下なら無効" do
@@ -173,12 +173,12 @@ class BookTest < ActiveSupport::TestCase
     assert_not @book.valid?
   end
 
-  test "貸出履歴のあるコピーを持つ本は削除できない" do
+  test "貸出履歴のある現物を持つ本は削除できない" do
     assert_no_difference("Book.count") { books(:two).destroy }
   end
 
-  test "貸出履歴がなければコピーごと本を削除できる" do
-    assert_difference("Book.count" => -1, "BookCopy.count" => -1) { books(:one).destroy }
+  test "貸出履歴がなければ現物ごと本を削除できる" do
+    assert_difference("Book.count" => -1, "BookItem.count" => -1) { books(:one).destroy }
   end
 
   test "タイトルの部分一致で検索できる" do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_21_033830) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_21_060000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -56,11 +56,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_21_033830) do
     t.index ["book_id"], name: "index_book_authors_on_book_id"
   end
 
-  create_table "book_copies", force: :cascade do |t|
+  create_table "book_items", force: :cascade do |t|
     t.integer "book_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["book_id"], name: "index_book_copies_on_book_id"
+    t.index ["book_id"], name: "index_book_items_on_book_id"
   end
 
   create_table "book_tags", force: :cascade do |t|
@@ -84,13 +84,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_21_033830) do
   end
 
   create_table "rentals", force: :cascade do |t|
-    t.integer "book_copy_id", null: false
+    t.integer "book_item_id", null: false
     t.datetime "created_at", null: false
     t.datetime "returned_at"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
-    t.index ["book_copy_id"], name: "index_rentals_on_book_copy_id"
-    t.index ["book_copy_id"], name: "index_rentals_on_book_copy_id_when_active", unique: true, where: "returned_at IS NULL"
+    t.index ["book_item_id"], name: "index_rentals_on_book_item_id"
+    t.index ["book_item_id"], name: "index_rentals_on_book_item_id_when_active", unique: true, where: "returned_at IS NULL"
     t.index ["user_id"], name: "index_rentals_on_user_id"
   end
 
@@ -255,10 +255,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_21_033830) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "book_authors", "authors"
   add_foreign_key "book_authors", "books"
-  add_foreign_key "book_copies", "books"
+  add_foreign_key "book_items", "books"
   add_foreign_key "book_tags", "books"
   add_foreign_key "book_tags", "tags"
-  add_foreign_key "rentals", "book_copies"
+  add_foreign_key "rentals", "book_items"
   add_foreign_key "rentals", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
