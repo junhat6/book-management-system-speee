@@ -19,6 +19,14 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+    # ローカルの .env に GOOGLE_BOOKS_API_KEY を設定していると（本番クォータ回避のため
+    # 推奨されている運用）、dotenv-rails が development/test 両方でそれを読み込んでしまい、
+    # key パラメータを想定していない既存のスタブが軒並み WebMock::NetConnectNotAllowedError
+    # で落ちる。CIには .env が無いため気づけない環境依存のテスト脆弱性なので、
+    # テスト中は常に未設定として扱い、環境に依存せず再現性を保つ
+    setup { @original_google_books_api_key = ENV.delete("GOOGLE_BOOKS_API_KEY") }
+    teardown { ENV["GOOGLE_BOOKS_API_KEY"] = @original_google_books_api_key }
+
     # Add more helper methods to be used by all tests here...
   end
 end

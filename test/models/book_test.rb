@@ -328,4 +328,54 @@ class BookTest < ActiveSupport::TestCase
 
     assert_operator ids.index(newer_id.id), :<, ids.index(older_id.id)
   end
+
+  # --- 発展要件6拡張: 表紙画像（Google Books API + Active Storage） ---
+
+  VALID_COVER_URL = "https://books.google.com/books/content?id=abc123&img=1"
+
+  def stub_cover_image(status: 200)
+    stub_request(:get, VALID_COVER_URL)
+      .to_return(status: status, body: file_fixture("cover_sample.jpg").read, headers: { "Content-Type" => "image/jpeg" })
+  end
+
+  test "remote_cover_image_url を指定して保存すると cover_image が添付される" do
+    stub_cover_image
+    @book.remote_cover_image_url = VALID_COVER_URL
+
+    assert @book.save
+    assert @book.cover_image.attached?
+  end
+
+  test "remote_cover_image_url が空なら画像取得を試みない" do
+    assert @book.save
+    assert_not @book.cover_image.attached?
+    assert_not_requested :get, VALID_COVER_URL
+  end
+
+  test "画像ダウンロードが失敗しても本の保存自体は成功する" do
+    stub_request(:get, VALID_COVER_URL).to_timeout
+    @book.remote_cover_image_url = VALID_COVER_URL
+
+    assert @book.save
+    assert_not @book.cover_image.attached?
+  end
+
+  test "バリデーションエラーで保存に失敗する場合は画像取得を試みない" do
+    @book.title = ""
+    @book.remote_cover_image_url = VALID_COVER_URL
+
+    assert_not @book.save
+    assert_not_requested :get, VALID_COVER_URL
+  end
+
+  test "既存の添付画像は remote_cover_image_url を指定しない更新では維持される" do
+    stub_cover_image
+    @book.remote_cover_image_url = VALID_COVER_URL
+    @book.save!
+    assert @book.cover_image.attached?
+
+    @book.update!(published_year: 2020)
+
+    assert @book.reload.cover_image.attached?
+  end
 end

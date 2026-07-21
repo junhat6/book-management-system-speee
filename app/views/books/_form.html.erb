@@ -12,6 +12,18 @@
     </div>
   <% end %>
 
+  <% if @book.cover_image.attached? %>
+    <div>
+      <%= image_tag @book.cover_image, class: "w-24 h-32 object-cover rounded shadow" %>
+    </div>
+  <% elsif @book.remote_cover_image_url.present? %>
+    <div>
+      <%= image_tag @book.remote_cover_image_url, class: "w-24 h-32 object-cover rounded shadow" %>
+      <p class="text-xs text-base-content/50 mt-1">登録すると表紙画像として保存されます</p>
+    </div>
+  <% end %>
+  <%= form.hidden_field :remote_cover_image_url %>
+
   <div>
     <%= form.label :title, "タイトル", class: "label" %>
     <%= form.text_field :title, class: "input input-bordered w-full" %>

@@ -10,6 +10,7 @@ class BooksController < ApplicationController
     @current_tag = Tag.find_by(id: params[:tag_id])
     @books = Book.search(params[:q]).with_tag(@current_tag&.id)
                  .includes(:authors, :tags, copies: :rentals)
+                 .with_attached_cover_image
                  .sorted(params[:sort], params[:direction])
                  .page(params[:page])
   end
@@ -65,7 +66,7 @@ class BooksController < ApplicationController
   end
 
   def book_params
-    params.require(:book).permit(:title, :isbn, :published_year, :publisher, :new_author_names, :new_tag_names, :initial_stock_count, author_ids: [], tag_ids: [])
+    params.require(:book).permit(:title, :isbn, :published_year, :publisher, :new_author_names, :new_tag_names, :initial_stock_count, :remote_cover_image_url, author_ids: [], tag_ids: [])
   end
 
   # 発展要件6: ISBN から Google Books API で書誌情報を取得し、フォーム初期値に反映する。
@@ -80,6 +81,7 @@ class BooksController < ApplicationController
       @book.publisher = volume.publisher
       @book.published_year = volume.published_year
       @book.new_author_names = volume.authors.join("、")
+      @book.remote_cover_image_url = volume.image_url
       @lookup_result = :found
     else
       @lookup_result = :not_found

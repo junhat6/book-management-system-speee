@@ -397,26 +397,53 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_not_requested :get, /googleapis/
   end
 
+  test "ISBN 検索が表紙画像URLを含む場合、フォームに hidden field で反映される" do
+    sign_in_as users(:one)
+    stub_google_books_hit("9784873115658", image_url: "http://books.google.com/books/content?id=abc&img=1")
+
+    get new_book_url(lookup_isbn: "978-4-87311-565-8")
+
+    assert_response :success
+    assert_select "input[name='book[remote_cover_image_url]'][value='https://books.google.com/books/content?id=abc&img=1']"
+  end
+
+  test "画像URLを含まない ISBN ヒットでも登録画面はクラッシュせず表示される" do
+    sign_in_as users(:one)
+    stub_google_books_hit("9784873115658")
+
+    get new_book_url(lookup_isbn: "9784873115658")
+
+    assert_response :success
+  end
+
+  test "remote_cover_image_url 付きで登録すると表紙画像が Active Storage に添付される" do
+    sign_in_as users(:one)
+    image_url = "https://books.google.com/books/content?id=abc&img=1"
+    stub_request(:get, image_url)
+      .to_return(status: 200, body: file_fixture("cover_sample.jpg").read, headers: { "Content-Type" => "image/jpeg" })
+
+    post books_url, params: { book: { title: "New Book", isbn: "111111111111", published_year: 2020, publisher: "New Publisher", author_ids: [ authors(:one).id ], remote_cover_image_url: image_url } }
+
+    assert_redirected_to book_url(Book.last)
+    assert Book.last.cover_image.attached?
+  end
+
   private
 
-  def stub_google_books_hit(isbn)
+  def stub_google_books_hit(isbn, image_url: nil)
+    volume_info = {
+      title: "リーダブルコード",
+      authors: [ "Dustin Boswell", "Trevor Foucher" ],
+      publisher: "オライリージャパン",
+      publishedDate: "2012-06"
+    }
+    volume_info[:imageLinks] = { thumbnail: image_url } if image_url
+
     stub_request(:get, "https://www.googleapis.com/books/v1/volumes")
       .with(query: { q: "isbn:#{isbn}" })
       .to_return(
         status: 200,
-        body: {
-          totalItems: 1,
-          items: [
-            {
-              volumeInfo: {
-                title: "リーダブルコード",
-                authors: [ "Dustin Boswell", "Trevor Foucher" ],
-                publisher: "オライリージャパン",
-                publishedDate: "2012-06"
-              }
-            }
-          ]
-        }.to_json,
+        body: { totalItems: 1, items: [ { volumeInfo: volume_info } ] }.to_json,
         headers: { "Content-Type" => "application/json" }
       )
   end
