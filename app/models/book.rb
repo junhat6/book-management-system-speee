@@ -147,9 +147,9 @@ class Book < ApplicationRecord
     end
   end
 
-  # 書影の取得失敗は登録・更新自体を妨げない（GoogleBooks と同じ「失敗は黙って諦める」方針）。
+  # 表紙の取得失敗は登録・更新自体を妨げない（GoogleBooks と同じ「失敗は黙って諦める」方針）。
   # 管理者からは「プレビューで見えた画像が保存後に消えている」ように見えうるが、
-  # 書影は付随情報であり本の登録を止めてまで守るべき情報ではないため許容する
+  # 表紙は付随情報であり本の登録を止めてまで守るべき情報ではないため許容する
   def attach_cover_image_from_remote_url
     url = remote_cover_image_url
     return if url.blank?

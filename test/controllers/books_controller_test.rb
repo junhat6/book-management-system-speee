@@ -397,7 +397,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_not_requested :get, /googleapis/
   end
 
-  test "ISBN 検索が書影画像URLを含む場合、フォームに hidden field で反映される" do
+  test "ISBN 検索が表紙画像URLを含む場合、フォームに hidden field で反映される" do
     sign_in_as users(:one)
     stub_google_books_hit("9784873115658", image_url: "http://books.google.com/books/content?id=abc&img=1")
 
@@ -416,7 +416,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "remote_cover_image_url 付きで登録すると書影画像が Active Storage に添付される" do
+  test "remote_cover_image_url 付きで登録すると表紙画像が Active Storage に添付される" do
     sign_in_as users(:one)
     image_url = "https://books.google.com/books/content?id=abc&img=1"
     stub_request(:get, image_url)

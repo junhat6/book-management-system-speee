@@ -1,4 +1,4 @@
-# db/seed_images/<ISBN>.jpg があれば書影として添付する（`bin/rails db:seed_images` で事前取得したもの）。
+# db/seed_images/<ISBN>.jpg があれば表紙として添付する（`bin/rails db:seed_images` で事前取得したもの）。
 # seeds.rb は本番デプロイ時にも実行されるため、ここではネットワークに一切アクセスしない
 # （Google Books API を都度叩くと、レート制限やAPI障害がデプロイに影響してしまう）
 def attach_seed_cover_image(book)

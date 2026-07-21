@@ -329,7 +329,7 @@ class BookTest < ActiveSupport::TestCase
     assert_operator ids.index(newer_id.id), :<, ids.index(older_id.id)
   end
 
-  # --- 発展要件6拡張: 書影画像（Google Books API + Active Storage） ---
+  # --- 発展要件6拡張: 表紙画像（Google Books API + Active Storage） ---
 
   VALID_COVER_URL = "https://books.google.com/books/content?id=abc123&img=1"
 

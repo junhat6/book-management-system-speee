@@ -19,7 +19,7 @@
   <% elsif @book.remote_cover_image_url.present? %>
     <div>
       <%= image_tag @book.remote_cover_image_url, class: "w-24 h-32 object-cover rounded shadow" %>
-      <p class="text-xs text-base-content/50 mt-1">登録すると書影画像として保存されます</p>
+      <p class="text-xs text-base-content/50 mt-1">登録すると表紙画像として保存されます</p>
     </div>
   <% end %>
   <%= form.hidden_field :remote_cover_image_url %>

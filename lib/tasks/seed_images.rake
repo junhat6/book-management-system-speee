@@ -1,5 +1,5 @@
 namespace :db do
-  desc "seeds.rb が使う書影画像を Google Books API から取得し db/seed_images/ に保存する。" \
+  desc "seeds.rb が使う表紙画像を Google Books API から取得し db/seed_images/ に保存する。" \
        "既存ファイルはスキップするため、PRODUCTION_BOOKS に本を追加した後の再実行でも重複取得はしない。" \
        "取得した画像は db/seed_images/ に含めてコミットし、seeds.rb はこのローカルファイルから添付する" \
        "（seeds.rb 自体は本番デプロイ時にも実行されるため、ネットワーク依存にしないための一度きりの下ごしらえ）"
